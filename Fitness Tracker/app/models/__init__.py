@@ -1,0 +1,1 @@
+#allows the models folder to be treated as a package

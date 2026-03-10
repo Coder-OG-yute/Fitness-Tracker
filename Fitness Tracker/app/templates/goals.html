@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- goals page: form to create a goal (type, target value, unit, date, description); list of goals with edit/update/delete -->
+<h1>Your Goals</h1>
+
+<!-- Form to create a new goal -->
+<form method="POST">
+    <label for="goalType">Goal type:</label>
+    <select id="goalType" name="goalType" required>
+        <option value="nutrient">Nutrient</option>
+        <option value="strength">Strength</option>
+        <option value="weight">Weight</option>
+        <option value="cardio">Cardio</option>
+    </select>
+    <br>
+
+    <label for="targetValue">Target value:</label>
+    <input type="number" step="0.1" id="targetValue" name="targetValue" required>
+    <br>
+
+    <label for="unit">Unit (e.g. g, kg, cal, km, reps):</label>
+    <input type="text" id="unit" name="unit" required>
+    <br>
+
+    <label for="targetDate">Target date:</label>
+    <input type="date" id="targetDate" name="targetDate" required min="1900-01-01" max="2200-12-31">
+    <button type="button" onclick="setToday('targetDate')" style="margin-left: 10px;">Today</button>
+    <br>
+
+    <label for="description">Goal:</label>
+    <input type="text" id="description" name="description" required>
+    <br>
+
+    <button type="submit">Create Goal</button>
+</form>
+
+<h2>Existing Goals</h2>
+<ul>
+    <li>• Go to Analytics to view goals</li>
+</ul>
+{% if goals %}
+    <!-- each goal: description, type, target/current/progress%; edit (prompt then POST /goals/edit/id), delete (confirm then POST /goals/delete/id), update progress (prompt then POST /goals/update/id) -->
+    <ul style="list-style: none; padding: 0;">
+        {% for g in goals %}
+            <li style="padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    {{ g.desc }} ({{ g.goalType }}) - Target: {{ g.targetValue }} {{ g.unit }},
+                    Current: {{ g.currentValue }} {{ g.unit }},
+                    Progress: {{ g.calcProgress() }}%
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <img src="{{ url_for('static', filename='images/pencil.webp') }}" 
+                         alt="Edit" 
+                         class="icon-standard" 
+                         style="cursor: pointer; width: 32px; height: 32px;"
+                         onclick="editGoal({{ g.goalID }}, '{{ g.desc }}', {{ g.targetValue }}, '{{ g.targetDate }}', '{{ g.unit }}')">
+                    <img src="{{ url_for('static', filename='images/trash.webp') }}" 
+                         alt="Delete" 
+                         class="icon-standard" 
+                         style="cursor: pointer; width: 32px; height: 32px;"
+                         onclick="deleteGoal({{ g.goalID }})">
+                    <button type="button" onclick="updateProgress({{ g.goalID }}, {{ g.currentValue }})" style="padding: 5px 10px; font-size: 12px;">Update Progress</button>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No goals yet. Create one using the form above.</p>
+{% endif %}
+
+<script>
+function editGoal(goalId, currentDescription, currentTarget, currentDate, currentUnit) {
+    const newDescription = prompt('Enter goal name:', currentDescription);
+    const newTarget = prompt('Enter target value:', currentTarget);
+    const newDate = prompt('Enter target date (YYYY-MM-DD):', currentDate);
+    const newUnit = prompt('Enter unit:', currentUnit);
+    
+    if (newDescription !== null && newTarget !== null && newDate !== null && newUnit !== null) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/goals/edit/' + goalId;
+        form.innerHTML = `
+            <input type="hidden" name="description" value="${newDescription}">
+            <input type="hidden" name="targetValue" value="${newTarget}">
+            <input type="hidden" name="targetDate" value="${newDate}">
+            <input type="hidden" name="unit" value="${newUnit}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// updateProgress: prompt for new current value then POST to /goals/update/<id>
+function updateProgress(goalId, currentValue) {
+    const newValue = prompt('Enter new current value:', currentValue);
+    if (newValue !== null && newValue !== '') {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/goals/update/' + goalId;
+        form.innerHTML = `
+            <input type="hidden" name="currentValue" value="${newValue}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// deleteGoal: confirm then POST to /goals/delete/<id>
+function deleteGoal(goalId) {
+    if (confirm('Are you sure you want to delete this goal?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/goals/delete/' + goalId;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
+

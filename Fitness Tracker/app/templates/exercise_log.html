@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- exercise log page: form for type (gym/cardio), exercise name, sets/reps/weight or duration, date; optional workout preset -->
+<h1>Log Exercise</h1>
+
+<!-- form: exercise type first, then name and type-specific fields; main.js toggles gym vs cardio fields -->
+<!--
+This form lets the user log an exercise session.
+We keep the inputs simple and explain what each one does.
+-->
+
+{% if not preset %}
+<!-- when no preset is loaded: show workout dropdown and manual exercise form -->
+<div class="form-group">
+    <label for="workout_select">Or select a saved Workout:</label>
+    <select id="workout_select">
+        <option value="">-- Select a Workout --</option>
+        <!-- options populated by main.js from /exercise/presets -->
+    </select>
+    <a href="{{ url_for('exercise.workouts_page') }}" style="margin-left: 10px;">Create/Edit Workouts</a>
+</div>
+
+<form method="POST" id="exercise_log_form">
+    <!-- step 1: exercise type (gym or cardio); main.js shows/hides name and type-specific fields -->
+    <label for="exercise_type">Exercise Type:</label>
+    <select id="exercise_type" name="exercise_type" required>
+        <option value="">-- Choose type first --</option>
+        <option value="gym">Gym</option>
+        <option value="cardio">Cardio</option>
+    </select>
+    <br>
+
+    <!-- step 2: exercise name dropdown; options from route, filtered by type in main.js -->
+    <div id="exercise_name_container" style="display: none;">
+        <label for="exerciseName">Exercise name:</label>
+        <select id="exerciseName" name="exerciseName">
+            <option value="">-- Choose an exercise --</option>
+            {% for name in exerciseNames %}
+                <option value="{{ name }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+    </div>
+
+    <!-- gym-only: weight (kg), sets, reps; shown when type is gym -->
+    <div id="gym_fields" style="display: none;">
+        <label for="weight">Weight (kg):</label>
+        <input type="number" step="0.1" id="weight" name="weight" min="0.1">
+        <br>
+
+        <label for="sets">Sets:</label>
+        <input type="number" id="sets" name="sets" min="1">
+        <br>
+
+        <label for="reps">Reps:</label>
+        <input type="number" id="reps" name="reps" min="1">
+        <br>
+    </div>
+
+    <!-- cardio-only: duration (minutes); shown when type is cardio -->
+    <div id="cardio_fields" style="display: none;">
+        <label for="duration">Duration (minutes):</label>
+        <input type="number" step="1" id="duration" name="duration" min="1">
+        <br>
+    </div>
+
+    <!-- date required for log; setToday button uses date-helpers.js -->
+    <div id="date_container" style="display: none;">
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" min="1900-01-01" max="2200-12-31">
+        <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button>
+        <br>
+    </div>
+
+    <button type="submit">Save Exercise</button>
+</form>
+{% else %}
+    <!-- when preset is loaded: show preset name and editable exercise list; POST to log_workout route -->
+    <h2>{{ preset.basePreset.presetName }}</h2>
+    <p><em>You can modify these values for this session without changing the saved preset.</em></p>
+    
+    <form method="POST" action="{{ url_for('exercise.log_workout', preset_id=preset.basePreset.presetId) }}" id="workout_log_form">
+        <!-- each exercise: name, then sets/reps/weight (gym) or duration (cardio); hidden inputs for name and type; delete icon removes row -->
+        <ul id="preset_exercises_list" style="list-style: none; padding: 0;">
+            {% for ex in preset.exerciseList %}
+                <li id="exercise_item_{{ loop.index0 }}" style="padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>
+                        {{ ex.exerciseName }} - 
+                        {% if ex.durationValue %}
+                            Duration: <input type="number" step="1" name="duration_{{ loop.index0 }}" value="{{ ex.durationValue }}" min="1" style="width: 80px;"> min
+                        {% else %}
+                            Sets: <input type="number" name="sets_{{ loop.index0 }}" value="{{ ex.setsValue }}" min="1" style="width: 60px;"> 
+                            Reps: <input type="number" name="reps_{{ loop.index0 }}" value="{{ ex.repsValue }}" min="1" style="width: 60px;"> 
+                            Weight: <input type="number" step="0.1" name="weight_{{ loop.index0 }}" value="{{ ex.weightValue }}" min="0.1" style="width: 80px;"> kg
+                        {% endif %}
+                        <input type="hidden" name="exerciseName_{{ loop.index0 }}" value="{{ ex.exerciseName }}">
+                        <input type="hidden" name="exerciseType_{{ loop.index0 }}" value="{% if ex.durationValue %}cardio{% else %}gym{% endif %}">
+                    </span>
+                    <span style="display: flex; gap: 10px;">
+                        <img src="{{ url_for('static', filename='images/trash.webp') }}" 
+                             alt="Delete" 
+                             class="icon-standard" 
+                             style="cursor: pointer; width: 32px; height: 32px;"
+                             onclick="deletePresetExercise({{ loop.index0 }})">
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        <div style="margin-top: 20px;">
+            <label for="workout_date">Date:</label>
+            <input type="date" id="workout_date" name="date" min="1900-01-01" max="2200-12-31" required>
+            <button type="button" onclick="setToday('workout_date')" style="margin-left: 10px;">Today</button>
+        </div>
+        
+        <button type="submit" style="margin-top: 15px;">Save Exercise</button>
+    </form>
+    
+    <script>
+    function deletePresetExercise(index) {
+        if (confirm('Are you sure you want to remove this exercise from this workout session?')) {
+            const item = document.getElementById('exercise_item_' + index);
+            if (item) {
+                item.remove();
+            }
+        }
+    }
+    
+    // on submit: re-index remaining list items so backend receives consecutive indices (sets_0, exerciseName_0, etc.)
+    document.getElementById('workout_log_form').addEventListener('submit', function(e) {
+        const list = document.getElementById('preset_exercises_list');
+        const items = list.getElementsByTagName('li');
+        let newIndex = 0;
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            const inputs = item.querySelectorAll('input');
+            inputs.forEach(input => {
+                const oldName = input.name;
+                if (oldName) {
+                    const parts = oldName.split('_');
+                    // e.g. "sets_0" -> "sets_0", "exerciseName_0" -> "exerciseName_0" (with newIndex)
+                    if (parts.length >= 2 && /^\d+$/.test(parts[parts.length - 1])) {
+                        input.name = parts.slice(0, -1).join('_') + '_' + newIndex;
+                    }
+                }
+            });
+            item.id = 'exercise_item_' + newIndex;
+            newIndex++;
+        }
+    });
+    </script>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}
+

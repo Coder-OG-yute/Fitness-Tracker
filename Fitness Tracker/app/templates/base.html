@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<!-- 
+    Website template structure
+    Source: https://codepen.io/ash1198/pen/WbxEgzb (Forward Fitness Club template by Christopher DeLeon)
+    
+    EDITS MADE:
+    1. Converted from static HTML to Jinja2 template with extends and block syntax
+    2. Replaced hardcoded navigation links with Flask url_for() calls for dynamic routing
+    3. Added session-based conditional rendering:
+       - Show different nav items for logged-in vs logged-out users
+       - Display username in navigation bar when logged in
+    4. Added "Log" dropdown menu with sub-items (Exercise, Diet, Weight) - not in original template
+    5. Integrated Flask flash message system for user feedback
+    6. Added block content for child templates to extend
+    7. Replaced static script includes with url_for('static', ...) for Flask static file serving
+    8. Modified hamburger() function to only toggle menu-links, keeping logo visible
+    9. Added custom JavaScript files (validation.js, date-helpers.js) for our application features
+    10. Removed original template's specific content (hero images, about sections, etc.) - kept only structure
+    
+    WHY: The original template was a complete static website. We adapted it to be a base template
+    for our Flask application, maintaining the visual design and responsive layout while making
+    it dynamic and integrated with our authentication system and routing structure.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Francois+One&family=Roboto+Slab&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="container">
+    
+        <!-- Mobile Nav - Source: https://codepen.io/ash1198/pen/WbxEgzb -->
+        <nav class="mobile-nav">
+            <div id="menu-links">
+                {% if session.get('userId') %}
+                    <!-- if user is logged in: show home, log (exercise/diet/weight), workouts, goals, analytics, tips, calendar, logout -->
+                    <a href="{{ url_for('dashboard.home') }}">Home</a>
+                    <a href="{{ url_for('exercise.exercise_log') }}">Log Exercise</a>
+                    <a href="{{ url_for('diet.diet_log') }}">Log Diet</a>
+                    <a href="{{ url_for('dashboard.log_weight') }}">Log Weight</a>
+                    <a href="{{ url_for('exercise.workouts_page') }}">Workouts</a>
+                    <a href="{{ url_for('goals.goals_page') }}">Goals</a>
+                    <a href="{{ url_for('analytics.analytics_page') }}">Analytics</a>
+                    <a href="{{ url_for('tips.tips_page') }}">Tips</a>
+                    <a href="{{ url_for('dashboard.calendar') }}">Calendar</a>
+                    <a href="{{ url_for('auth.logout') }}">Logout</a>
+                {% else %}
+                    <!-- if user is not logged in: show only login and sign up -->
+                    <a href="{{ url_for('auth.login') }}">Login</a>
+                    <a href="{{ url_for('auth.signup') }}">Sign Up</a>
+                {% endif %}
+            </div>
+            <a class="menu-icon" onclick="hamburger()">
+                <div>&#9776;</div>
+            </a>
+        </nav>
+        
+        <!-- Header area for website name/logo - Source: https://codepen.io/ash1198/pen/WbxEgzb -->
+        <header id="ffc-logo">
+            <a href="{{ url_for('dashboard.home') }}"><h1>Fitness Tracker</h1></a>
+        </header>
+
+        <!-- Tablet, Desktop Nav - Source: https://codepen.io/ash1198/pen/WbxEgzb -->
+        <nav class="tablet-desktop">
+            <ul>
+                <li><a href="{{ url_for('dashboard.home') }}">Home</a></li>
+                {% if session.get('userId') %}
+                    <!-- logged in: username, Log dropdown (exercise/diet/weight), workouts, goals, analytics, tips, calendar, logout -->
+                    <li class="nav-username">Logged in as {{ session.get('username') }}</li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle">Log ▼</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('exercise.exercise_log') }}">Exercise</a></li>
+                            <li><a href="{{ url_for('diet.diet_log') }}">Diet</a></li>
+                            <li><a href="{{ url_for('dashboard.log_weight') }}">Weight</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="{{ url_for('exercise.workouts_page') }}">Workouts</a></li>
+                    <li><a href="{{ url_for('goals.goals_page') }}">Goals</a></li>
+                    <li><a href="{{ url_for('analytics.analytics_page') }}">Analytics</a></li>
+                    <li><a href="{{ url_for('tips.tips_page') }}">Tips</a></li>
+                    <li><a href="{{ url_for('dashboard.calendar') }}">Calendar</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                {% else %}
+                    <!-- not logged in: login and sign up only -->
+                    <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                    <li><a href="{{ url_for('auth.signup') }}">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        
+        <!-- flash messages: loop over Flask flash messages (success/error) and display each in a div -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- main content: child templates fill this block -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+        
+        <!-- Footer area - Source: https://codepen.io/ash1198/pen/WbxEgzb -->
+        <footer>
+            <div class="copyright">
+                <p>&copy; Copyright 2026. All Rights Reserved.</p>
+                <p>Fitness Tracker - Track Your Progress</p>
+            </div>
+        </footer>
+    
+    </div>
+    
+    <!-- validation.js: password match on signup; date-helpers.js: setToday, validateDate, min/max on date inputs -->
+    <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/date-helpers.js') }}"></script>
+    <script>
+    // hamburger menu: toggles menu-links visibility on mobile (logo stays visible)
+    // EDITED: Only toggles the menu links, keeps the logo visible (original hid logo on mobile)
+    function hamburger() {
+        var menu = document.getElementById("menu-links");
+        if (menu.style.display === "block") {
+            menu.style.display = "none";
+        } else {
+            menu.style.display = "block";
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Workouts</h1>
+
+<p>Create and manage your workout presets. A workout is a saved collection of exercises that you can quickly select when logging exercises.</p>
+
+<!-- Create new workout form -->
+<div class="card" style="margin: 20px 0; padding: 20px;">
+    <h2>Create New Workout</h2>
+    <!-- hidden action=create; route creates preset then redirects back -->
+    <form method="POST">
+        <input type="hidden" name="action" value="create">
+        <label for="preset_name">Workout Name:</label>
+        <input type="text" id="preset_name" name="preset_name" required>
+        <button type="submit">Create Workout</button>
+    </form>
+</div>
+
+<h2>Your Workouts</h2>
+{% if workouts %}
+    {% for workout in workouts %}
+        <div class="card" style="margin: 20px 0; padding: 20px;">
+            <h3>{{ workout.presetName }}</h3>
+            <!-- list of exercises in this preset; each has delete form (action=delete_exercise, presetId, exerciseIndex) -->
+            {% if workout.exerciseList %}
+                <ul style="list-style: none; padding: 0;">
+                    {% for ex in workout.exerciseList %}
+                        <li style="padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: space-between;">
+                            <span>
+                                {{ ex.exerciseName }} - 
+                                {% if ex.durationValue %}
+                                    Duration: {{ ex.durationValue }} min
+                                {% else %}
+                                    {% if ex.weightValue %}Weight: {{ ex.weightValue }} kg, {% endif %}
+                                    Sets: {{ ex.setsValue }}, Reps: {{ ex.repsValue }}
+                                {% endif %}
+                            </span>
+                            <form method="POST" style="display: inline; margin: 0;">
+                                <input type="hidden" name="action" value="delete_exercise">
+                                <input type="hidden" name="presetId" value="{{ workout.presetId }}">
+                                <input type="hidden" name="exerciseIndex" value="{{ loop.index0 }}">
+                                <img src="{{ url_for('static', filename='images/trash.webp') }}" 
+                                     alt="Delete" 
+                                     class="icon-standard" 
+                                     style="cursor: pointer; width: 32px; height: 32px;"
+                                     onclick="this.parentElement.submit();">
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p><em>No exercises in this workout yet.</em></p>
+            {% endif %}
+            <!-- add exercise form: action=add_exercise, presetId; type then name then gym/cardio fields; toggleWorkoutFields() in script -->
+            <form method="POST" id="add_exercise_form_{{ workout.presetId }}" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                <input type="hidden" name="action" value="add_exercise">
+                <input type="hidden" name="presetId" value="{{ workout.presetId }}">
+                <!-- exercise type first; script fetches /exercise/list?type= and shows gym or cardio fields -->
+                <div id="exercise_type_container_{{ workout.presetId }}">
+                    <label for="exercise_type_{{ workout.presetId }}">Exercise Type:</label>
+                    <select id="exercise_type_{{ workout.presetId }}" name="exerciseType" onchange="toggleWorkoutFields({{ workout.presetId }})">
+                        <option value="">-- Choose type first --</option>
+                        <option value="gym">Gym</option>
+                        <option value="cardio">Cardio</option>
+                    </select>
+                    <br>
+                </div>
+                
+                <!-- Exercise name selection (shown after type is selected) -->
+                <div id="exercise_name_container_{{ workout.presetId }}" style="display: none;">
+                    <label for="exercise_name_{{ workout.presetId }}">Exercise:</label>
+                    <select id="exercise_name_{{ workout.presetId }}" name="exerciseName">
+                        <option value="">-- Choose an exercise --</option>
+                        <!-- Will be populated by JavaScript based on type -->
+                    </select>
+                    <br>
+                </div>
+                
+                <!-- Gym fields (sets, reps, weight) -->
+                <div id="gym_fields_{{ workout.presetId }}" style="display: none;">
+                    <label for="sets_{{ workout.presetId }}">Sets:</label>
+                    <input type="number" id="sets_{{ workout.presetId }}" name="sets" min="1">
+                    <br>
+                    <label for="reps_{{ workout.presetId }}">Reps:</label>
+                    <input type="number" id="reps_{{ workout.presetId }}" name="reps" min="1">
+                    <br>
+                    <label for="weight_{{ workout.presetId }}">Weight (kg):</label>
+                    <input type="number" step="0.1" id="weight_{{ workout.presetId }}" name="weight" min="0.1">
+                    <br>
+                </div>
+                
+                <!-- Cardio fields (duration) -->
+                <div id="cardio_fields_{{ workout.presetId }}" style="display: none;">
+                    <label for="duration_{{ workout.presetId }}">Duration (minutes):</label>
+                    <input type="number" step="1" id="duration_{{ workout.presetId }}" name="duration" min="1">
+                    <br>
+                </div>
+                
+                <button type="submit" id="submit_btn_{{ workout.presetId }}" style="display: none;">Add Exercise</button>
+            </form>
+            <!-- delete entire preset: action=delete, presetId; confirm before submit -->
+            <form method="POST" style="margin-top: 10px;" onsubmit="return confirm('Are you sure you want to delete this workout?');">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="presetId" value="{{ workout.presetId }}">
+                <button type="submit" style="background-color: #dc3545;">Delete Workout</button>
+            </form>
+        </div>
+        
+        <script>
+        // Toggle workout fields based on exercise type
+        function toggleWorkoutFields(presetId) {
+            const exerciseType = document.getElementById('exercise_type_' + presetId).value;
+            const exerciseNameContainer = document.getElementById('exercise_name_container_' + presetId);
+            const gymFields = document.getElementById('gym_fields_' + presetId);
+            const cardioFields = document.getElementById('cardio_fields_' + presetId);
+            const submitBtn = document.getElementById('submit_btn_' + presetId);
+            const exerciseSelect = document.getElementById('exercise_name_' + presetId);
+            
+            if (exerciseType === '') {
+                exerciseNameContainer.style.display = 'none';
+                gymFields.style.display = 'none';
+                cardioFields.style.display = 'none';
+                submitBtn.style.display = 'none';
+                exerciseSelect.removeAttribute('required');
+                document.getElementById('sets_' + presetId).removeAttribute('required');
+                document.getElementById('reps_' + presetId).removeAttribute('required');
+                document.getElementById('weight_' + presetId).removeAttribute('required');
+                document.getElementById('duration_' + presetId).removeAttribute('required');
+            } else {
+                exerciseNameContainer.style.display = 'block';
+                submitBtn.style.display = 'block';
+                exerciseSelect.setAttribute('required', 'required');
+                
+                // Clear and populate exercise dropdown based on type
+                exerciseSelect.innerHTML = '<option value="">-- Choose an exercise --</option>';
+                fetch('/exercise/list?type=' + exerciseType)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(function(exercise) {
+                            const option = document.createElement('option');
+                            option.value = exercise.exerciseName;
+                            option.text = exercise.exerciseName;
+                            exerciseSelect.appendChild(option);
+                        });
+                    })
+                    .catch(function() {
+                        console.log('Could not load exercises.');
+                    });
+                
+                if (exerciseType === 'gym') {
+                    gymFields.style.display = 'block';
+                    cardioFields.style.display = 'none';
+                    document.getElementById('sets_' + presetId).setAttribute('required', 'required');
+                    document.getElementById('reps_' + presetId).setAttribute('required', 'required');
+                    document.getElementById('weight_' + presetId).setAttribute('required', 'required');
+                    document.getElementById('duration_' + presetId).removeAttribute('required');
+                } else if (exerciseType === 'cardio') {
+                    gymFields.style.display = 'none';
+                    cardioFields.style.display = 'block';
+                    document.getElementById('duration_' + presetId).setAttribute('required', 'required');
+                    document.getElementById('sets_' + presetId).removeAttribute('required');
+                    document.getElementById('reps_' + presetId).removeAttribute('required');
+                    document.getElementById('weight_' + presetId).removeAttribute('required');
+                }
+            }
+        }
+        </script>
+    {% endfor %}
+{% else %}
+    <p>No workouts yet. Create one using the form above.</p>
+{% endif %}
+<!-- link back to exercise log (where user can select a workout to use) -->
+<p><a href="{{ url_for('exercise.exercise_log') }}">Back to Exercise Log</a></p>
+{% endblock %}
