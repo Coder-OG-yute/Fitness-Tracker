@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- diet log edit: form to update food name, mass, date for existing diet log; POST to edit_diet_log -->
+<h1>Edit Diet Log</h1>
+<form method="POST" action="{{ url_for('diet.edit_diet_log', log_id=log_id) }}"> <!-- POST to edit_diet_log -->
+    <div class="form-group"> <!-- food name input form -->
+        <label for="foodName">Food name:</label> <!-- label for food name input -->
+        <input type="text" id="foodName" name="foodName" value="{{ log.foodName }}" required> <!-- input for food name -->
+    </div>
+    <div class="form-group"> <!-- mass input form -->
+        <label for="mass">Mass (g):</label> <!-- label for mass input -->
+        <input type="number" id="mass" name="mass" step="0.1" min="0.1" value="{{ log.mass }}" required> <!-- input for mass -->
+    </div>
+    <div class="form-group"> <!-- date input form -->
+        <label for="date">Date:</label> <!-- label for date input -->
+        <input type="date" id="date" name="date" value="{{ log.date }}" min="1900-01-01" max="2200-12-31" required> <!-- input for date -->
+        <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button> <!-- button to set today's date -->
+    </div>
+    <button type="submit" class="btn">Update</button> <!-- button to update the diet log -->
+    <a href="{{ url_for('dashboard.calendar') }}" class="btn" style="margin-left: 10px;">Cancel</a> <!-- link to cancel and go back to calendar -->
+</form>
+<!-- back to calendar without saving -->
+<p style="margin-top: 16px;"><a href="{{ url_for('dashboard.calendar') }}">Back to Calendar</a></p> <!-- link to go back to calendar -->
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- login page: form for username and password; POST to auth login route -->
+<h1>Login</h1>
+
+<!-- form: username, password; POST to login -->
+<form method="POST">
+    <label for="username">Username:</label> <!-- label for username input -->
+    <input type="text" id="username" name="username" required> <!-- input for username -->
+    <br>
+    <label for="password">Password:</label> <!-- label for password input -->
+    <input type="password" id="password" name="password" required> <!-- input for password -->
+    <br>
+    <button type="submit">Login</button> <!-- button to submit login -->
+</form>
+
+<!-- link to signup if user does not have an account -->
+<p>Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up here</a>.</p> <!-- link to signup page -->
+{% endblock %}
+

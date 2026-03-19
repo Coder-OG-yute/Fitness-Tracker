@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- exercise log page: form for exercise type(gym/cardio), exercise name, sets/reps/weight or duration for cardio, date, or a workout preset -->
+<h1>Log Exercise</h1> <!-- heading for the exercise log page -->
+
+<!--this form lets the user log an exercise session-->
+<!-- form is: exercise type first, then name and type-specific fields; main.js toggles gym vs cardio fields -->
+{% if not preset %}
+<!-- when no workout preset is loaded: show workout dropdown and manual exercise form -->
+<div class="form-group">
+    <label for="workout_select">Or select a saved Workout:</label> <!-- label for the workout preset dropdown -->
+    <select id="workout_select"> <!-- dropdown for the workout preset -->
+        <option value="">-- Select a Workout --</option>
+        <!-- workout preset options from main.js from /exercise/presets -->
+    </select>
+    <a href="{{ url_for('exercise.workouts_page') }}" style="margin-left: 10px;">Create/Edit Workouts</a> <!-- link to create/edit workouts -->
+</div>
+
+<form method="POST" id="exercise_log_form"> <!-- form for the exercise log -->
+    <!-- step 1) exercise type (gym or cardio) -->
+    <label for="exercise_type">Exercise Type:</label> <!-- label for the exercise type dropdown -->
+    <select id="exercise_type" name="exercise_type" required> <!-- dropdown for the exercise type -->
+        <option value="">-- Choose type first --</option> <!-- option to choose the exercise type -->
+        <option value="gym">Gym</option> <!-- option for gym -->
+        <option value="cardio">Cardio</option> <!-- option for cardio -->
+    </select>
+    <br>
+
+    <!-- step 2) exercise name dropdown, options from route, filtered by type in main.js -->
+    <div id="exercise_name_container" style="display: none;">
+        <label for="exerciseName">Exercise name:</label> <!-- label for the exercise name dropdown -->
+        <select id="exerciseName" name="exerciseName"> <!-- dropdown for the exercise name -->
+            <option value="">-- Choose an exercise --</option> <!-- option to choose the exercise name -->
+            {% for name in exerciseNames %} <!-- options for the exercise name dropdown -->
+            <option value="{{ ex.name }}" data-type="{{ ex.type }}">{{ ex.name }}</option><!-- option for the exercise name -->
+            {% endfor %}
+        </select>
+        <br>
+    </div>
+
+    <!-- for gym exercise type: weight (kg), sets, reps -->
+    <div id="gym_fields" style="display: none;"> <!-- fields for the gym exercise type -->
+        <label for="weight">Weight (kg):</label> <!-- label for the weight input -->
+        <input type="number" step="0.1" id="weight" name="weight" min="0.1"> <!-- input for the weight -->
+        <br>
+
+        <label for="sets">Sets:</label> <!-- label for the sets input -->
+        <input type="number" id="sets" name="sets" min="1"> <!-- input for the sets -->
+        <br>
+
+        <label for="reps">Reps:</label> <!-- label for the reps input -->
+        <input type="number" id="reps" name="reps" min="1"> <!-- input for the reps -->
+        <br>
+    </div>
+
+    <!-- for cardio exercise type: duration (minutes) -->
+    <div id="cardio_fields" style="display: none;"> <!-- fields for the cardio exercise type -->
+        <label for="duration">Duration (minutes):</label> <!-- label for the duration input -->
+        <input type="number" step="1" id="duration" name="duration" min="1"> <!-- input for the duration -->
+        <br>
+    </div>
+
+    <!-- date of logging, setToday button uses date-helpers.js -->
+    <div id="date_container" style="display: none;"> <!-- fields for the date of logging -->
+        <label for="date">Date:</label> <!-- label for the date input -->
+        <input type="date" id="date" name="date" min="1900-01-01" max="2200-12-31"> <!-- input for the date -->
+        <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button> <!-- button to set today's date -->
+        <br>
+    </div>
+
+    <button type="submit">Save Exercise</button> <!-- button to save the exercise -->
+</form>
+{% else %}
+    <!-- when preset is loaded: show preset name and editable exercise list; POST to log_workout route -->
+    <h2>{{ preset.basePreset.presetName }}</h2> <!-- name of the preset -->
+    <p><em>You can modify these values for this session without changing the saved preset.</em></p> <!-- explanation of the preset -->
+    
+    <form method="POST" action="{{ url_for('exercise.log_workout', preset_id=preset.basePreset.presetId) }}" id="workout_log_form"> <!-- form for the workout log -->
+        <!-- each exercise: name, then sets/reps/weight (gym) or duration (cardio) -->
+        <ul id="preset_exercises_list" style="list-style: none; padding: 0;"> <!-- list of exercises in the preset -->
+            {% for ex in preset.exerciseList %} <!-- each exercise in the preset -->
+                <li id="exercise_item_{{ loop.index0 }}" style="padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>
+                        {{ ex.exerciseName }} - <!-- exercise name -->
+                        {% if ex.durationValue %}
+                            Duration: <input type="number" step="1" name="duration_{{ loop.index0 }}" value="{{ ex.durationValue }}" min="1" style="width: 80px;"> min <!-- duration input -->
+                        {% else %}
+                            Sets: <input type="number" name="sets_{{ loop.index0 }}" value="{{ ex.setsValue }}" min="1" style="width: 60px;"> <!-- sets input -->
+                            Reps: <input type="number" name="reps_{{ loop.index0 }}" value="{{ ex.repsValue }}" min="1" style="width: 60px;"> <!-- reps input -->
+                            Weight: <input type="number" step="0.1" name="weight_{{ loop.index0 }}" value="{{ ex.weightValue }}" min="0.1" style="width: 80px;"> kg <!-- weight input -->
+                        {% endif %}
+                        <input type="hidden" name="exerciseName_{{ loop.index0 }}" value="{{ ex.exerciseName or '' }}"> <!-- hidden input for the exercise name -->
+                        <input type="hidden" name="exerciseType_{{ loop.index0 }}" value="{% if ex.durationValue %}cardio{% else %}gym{% endif %}"> <!-- hidden input for the exercise type -->
+                    </span>
+                    <span style="display: flex; gap: 10px;"> <!-- delete icon -->
+                        <img src="{{ url_for('static', filename='images/trash.webp') }}" 
+                             alt="Delete" 
+                             class="icon-standard" 
+                             style="cursor: pointer; width: 32px; height: 32px;"
+                             onclick="deletePresetExercise('{{ loop.index0 }}')"> <!-- button to delete the exercise with image i selected-->
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        <div style="margin-top: 20px;">
+            <label for="workout_date">Date:</label> <!-- label for the date input -->
+            <input type="date" id="workout_date" name="date" min="1900-01-01" max="2200-12-31" required> <!-- input for the date -->
+            <button type="button" onclick="setToday('workout_date')" style="margin-left: 10px;">Today</button> <!-- button to set today's date -->
+        </div>
+        
+        <button type="submit" style="margin-top: 15px;">Save Exercise</button>
+    </form>
+    
+    <script>
+    function deletePresetExercise(index) {
+        if (confirm('Are you sure you want to remove this exercise from this workout session?')) { // double check andconfirm before deleting the exercise
+            const item = document.getElementById('exercise_item_' + index); // get the exercise item by index
+            if (item) { // if the exercise item exists, remove it
+                item.remove(); // remove the exercise item
+            }
+        }
+    }
+    
+    // on submit: re-index remaining list items so backend receives consecutive indices (sets_0, exerciseName_0, etc.)
+    document.getElementById('workout_log_form').addEventListener('submit', function(e) {
+        const list = document.getElementById('preset_exercises_list'); // get the list of exercises
+        const items = list.getElementsByTagName('li'); // get the items in the list
+        let newIndex = 0; // start the new index at 0
+        for (let i = 0; i < items.length; i++) { // loop through the items
+            const item = items[i]; // get the item by index
+            const inputs = item.querySelectorAll('input'); // get the inputs in the item
+            inputs.forEach(input => { // loop through the inputs
+                const oldName = input.name; // get the name of the input
+                if (oldName) { // if the name exists, split the name by underscore
+                    const parts = oldName.split('_'); // split the name by underscore
+                    // e.g. "sets_0" -> "sets_0", "exerciseName_0" -> "exerciseName_0" (with newIndex)
+                    if (parts.length >= 2 && /^\d+$/.test(parts[parts.length - 1])) {
+                        input.name = parts.slice(0, -1).join('_') + '_' + newIndex; // join the parts by underscore and add the new index
+                    }
+                }
+            });
+            item.id = 'exercise_item_' + newIndex; // set the id of the item to the new index
+            newIndex++; // increment the new index
+        }
+    }); // add event listener to the form submit event      
+    </script>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}
+

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- exercise log edit: form to update date, sets, reps, weight, duration; backend recalculates calories -->
+<h1>Edit Exercise Log</h1>
+<form method="POST" action="{{ url_for('exercise.edit_exercise_log', log_id=log_id) }}">
+    <!-- exercise name read-only; backend recalculates calories from updated fields -->
+    <p><strong>Exercise:</strong> {{ log.exerciseName }}</p> <!-- exercise name -->
+    <div class="form-group"> <!-- date input form -->
+        <label for="date">Date:</label> <!-- label for date input -->
+        <input type="date" id="date" name="date" value="{{ log.date }}" min="1900-01-01" max="2200-12-31" required> <!-- input for date with valid range of years -->
+        <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button> <!-- button to set today's date -->
+    </div>
+    <div class="form-group"> <!-- exercise sets input form -->
+        <label for="sets">Sets:</label> <!-- label for exercise sets input -->
+        <input type="number" id="sets" name="sets" min="0" value="{{ log.sets or '' }}"> <!-- input for exercise sets -->
+    </div>
+    <div class="form-group"> <!-- exercise reps input form -->
+        <label for="reps">Reps:</label> <!-- label for exercise reps input -->
+        <input type="number" id="reps" name="reps" min="0" value="{{ log.reps or '' }}"> <!-- input for exercise reps -->
+    </div>
+    <div class="form-group"> <!-- exercise weight input form -->
+        <label for="weight">Weight (kg):</label> <!-- label for exercise weight input -->
+        <input type="number" id="weight" name="weight" step="0.1" min="0" value="{{ log.weight or '' }}"> <!-- input for exercise weight -->
+    </div>
+    <div class="form-group"> <!-- exercise duration input form -->
+        <label for="duration">Duration (min):</label> <!-- label for exercise duration input -->
+        <input type="number" id="duration" name="duration" step="1" min="0" value="{{ log.duration or '' }}"> <!-- input for exercise duration -->
+    </div>
+    <button type="submit" class="btn">Update</button> <!-- button to update the exercise log -->
+    <a href="{{ url_for('dashboard.calendar') }}" class="btn" style="margin-left: 10px;">Cancel</a> <!-- link to cancel and go back to calendar -->
+</form>
+<!-- back to calendar without saving -->
+<p style="margin-top: 16px;"><a href="{{ url_for('dashboard.calendar') }}">Back to Calendar</a></p> <!-- link to go back to calendar -->
+{% endblock %}

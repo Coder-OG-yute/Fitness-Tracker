@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- tips page: search by keyword, filter by diet/exercise, or random tips loaded from database -->
+<h1>Fitness Tips</h1>
+
+
+<div class="form-group"> <!-- search section: keyword input and search button -->
+    <label for="searchKeyword">Search Tips:</label> <!-- label for search keyword -->
+    <input type="text" id="searchKeyword" placeholder="Enter keyword..."> <!-- input for keyword-->
+    <button onclick="searchTips()">Search</button> <!-- button to run searchTips(), fetches /tips/search?keyword= -->
+</div>
+<!-- category buttons: displays diet or exercise tips or random tip (fetches from /tips/category/<cat> or /tips/random) -->
+<div class="form-group"> 
+    <label>Filter by Category:</label> <!-- label for category filter -->
+    <button onclick="filterByCategory('diet')">Diet Tips</button> <!-- diet tips button -->
+    <button onclick="filterByCategory('exercise')">Exercise Tips</button> <!-- exercise tips button -->
+    <button onclick="getRandomTip()">Random Tip</button> <!-- random tip button -->
+</div>
+<div id="tipBox"> <!-- container where tips are rendered -->
+    <p>Use the buttons above to view tips.</p>
+</div>
+
+<script>
+// fetches /tips/random and displays one tip in tipBox
+function getRandomTip() {
+    fetch('/tips/random')
+        .then(response => response.json())
+        .then(data => {
+            const tipBox = document.getElementById('tipBox');
+            tipBox.innerHTML = `
+                <div class="card">
+                    <h3>${data.title}</h3>
+                    <p><strong>Category:</strong> ${data.category}</p>
+                    <p>${data.content}</p>
+                    <p><em>Source: ${data.source}</em></p>
+                </div>
+            `;
+        })
+        .catch(error => {
+            document.getElementById('tipBox').innerHTML = '<p>Error loading tip.</p>';
+        });
+}
+
+// gets keyword from input, fetches /tips/search?keyword=, displays results in tipBox
+function searchTips() {
+    const keyword = document.getElementById('searchKeyword').value.trim();
+    if (!keyword) {
+        alert('Please enter a keyword to search.');
+        return;
+    }
+
+    fetch(`/tips/search?keyword=${encodeURIComponent(keyword)}`)
+        .then(response => response.json())
+        .then(data => {
+            const tipBox = document.getElementById('tipBox');
+            if (data.length === 0) {
+                tipBox.innerHTML = '<p>No tips found matching your search.</p>';
+                return;
+            }
+
+            let html = '<h2>Search Results:</h2>';
+            data.forEach(tip => {
+                html += `
+                    <div class="card">
+                        <h3>${tip.title}</h3>
+                        <p><strong>Category:</strong> ${tip.category}</p>
+                        <p>${tip.content}</p>
+                        <p><em>Source: ${tip.source}</em></p>
+                    </div>
+                `;
+            });
+            tipBox.innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('tipBox').innerHTML = '<p>Error searching tips.</p>';
+        });
+}
+
+// filters tips by category
+function filterByCategory(category) {
+    fetch(`/tips/category/${category}`)
+        .then(response => response.json())
+        .then(data => {
+            const tipBox = document.getElementById('tipBox');
+            if (data.length === 0) {
+                tipBox.innerHTML = `<p>No ${category} tips found.</p>`;
+                return;
+            }
+
+            let html = `<h2>${category.charAt(0).toUpperCase() + category.slice(1)} Tips:</h2>`;
+            data.forEach(tip => {
+                html += `
+                    <div class="card">
+                        <h3>${tip.title}</h3>
+                        <p>${tip.content}</p>
+                        <p><em>Source: ${tip.source}</em></p>
+                    </div>
+                `;
+            });
+            tipBox.innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('tipBox').innerHTML = '<p>Error loading tips.</p>';
+        });
+}
+
+// enter key in search input triggers searchTips
+document.getElementById('searchKeyword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchTips();
+    }
+});
+</script>
+{% endblock %}
