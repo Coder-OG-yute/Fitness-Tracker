@@ -9,10 +9,10 @@ from ..utils.data_structures import Queue
 tips_bp = Blueprint("tips", __name__)
 
 
-@tips_bp.route("/tips") # route for tips page
+@tips_bp.route("/tips", endpoint="tips_page") # route for tips page
 def tips_page(): # function to render the tips page
     """
-    main tips page that displays tips and allows searching.
+    main tips page that displays tips and allows searching
     """
     if "userId" not in session: # if user is not logged in, redirect to login page
         return redirect(url_for("auth.login")) # redirect to login page
@@ -22,7 +22,7 @@ def tips_page(): # function to render the tips page
 @tips_bp.route("/tips/random") # route for a random tip as JSON
 def random_tip(): # function to return a random tip from the database as JSON
     """
-    returns a random tip from the database.
+    returns a random tip from the database
     selects all tips then uses random.choice to pick one.
     """
     if "userId" not in session: # if user is not logged in, return error
@@ -57,16 +57,16 @@ def random_tip(): # function to return a random tip from the database as JSON
 @tips_bp.route("/tips/search") # route for searching tips by keyword
 def search_tips(): # function to return tips matching the keyword as JSON
     """
-    searches tips by keyword in title or content.
-    uses SQL LIKE with wildcards to match any text containing the keyword.
+    searches tips by keyword in title or content
+    uses SQL LIKE with % to match any text containing the keyword
     """
     if "userId" not in session: # if user is not logged in, return error
-        return jsonify({"error": "Not logged in"}), 401
+        return jsonify({"error": "Not logged in"}), 401 # returns error message if user is not logged in
 
     keyword = request.args.get("keyword", "").strip() # gets the keyword from the request
 
     if not keyword:
-        return jsonify({"error": "Please provide a keyword"}), 400
+        return jsonify({"error": "Please provide a keyword"}), 400 # returns error message if no keyword is provided
 
     db = g.db # gets the database connection
     cursor = db.cursor() # gets the database cursor
@@ -99,15 +99,16 @@ def search_tips(): # function to return tips matching the keyword as JSON
 
 
 @tips_bp.route("/tips/category/<category>") # route for filtering tips by category
-def tips_by_category(category): # function to return tips in the given category as JSON
+def tipsCat(category): # function to return tips in the category passed in parameter as JSON
     """
-    filters tips by category (either 'diet' or 'exercise'). returns matching tips as JSON.
+    filters tips by category (diet/exercise)
+    returns matching tips as JSON
     """
     if "userId" not in session: # if user is not logged in, return error
-        return jsonify({"error": "Not logged in"}), 401
+        return jsonify({"error": "Not logged in"}), 401 # returns error message if user is not logged in
 
     if category not in ["diet", "exercise"]: # only allow diet or exercise categories
-        return jsonify({"error": "Invalid category. Use 'diet' or 'exercise'"}), 400
+        return jsonify({"error": "Invalid category. Use 'diet' or 'exercise'"}), 400 # returns error message if category is not valid
 
     db = g.db # gets the database connection
     cursor = db.cursor() # gets the database cursor

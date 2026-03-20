@@ -3,21 +3,15 @@
 <h1>Calendar & History</h1>
 
 <!-- 
-    Toggle switch for Diet/Exercise logs
+    toggle switch for diet/exercise logs functionality
     Source: https://codepen.io/hktechhub/pen/Ggqpexx
     
-    EDITS MADE:
-    1. Removed the <span>Glow</span> text label - not needed for our use case
-    2. Changed checkbox ID from "tg7" to "logToggle" - more descriptive for our application
-    3. Added custom icons (dumbbell for exercise, food plate for diet) on either side of toggle
-    4. Integrated toggle state with JavaScript to filter calendar logs (exercise vs diet)
-    5. Added opacity changes to icons based on toggle state for visual feedback
-    
-    WHY: The original toggle was a generic "Glow" toggle. We adapted it to switch between
-    viewing exercise logs and diet logs in the calendar, making it contextually relevant
-    to our fitness tracking application.
+
+    original toggle was "Glow" toggle - adapted it to switch between
+    viewing exercise logs and diet logs in the calendar to be relevant
+    to the fitness tracking application
 -->
-<!-- toggle: exercise vs diet; logToggle state used by JS to filter which logs are fetched and shown -->
+<!-- exercise/diet calendar log view toggle from the source.-->
 <div style="display: flex; align-items: center; justify-content: center; margin: 20px 0; gap: 15px;">
     <span id="exercise_icon" style="cursor: pointer; font-weight: bold; padding: 4px 8px;">Exercise</span>
     <div class="hk-toggle hk-tg-7">
@@ -29,7 +23,7 @@
 
 <div id="logTypeLabel" style="text-align: center; font-weight: bold; margin-bottom: 20px;">Viewing: Exercise Logs</div>
 
-<!-- view selector: month/week/day; script switchView() updates display (month fully implemented) -->
+<!-- calendar time view selector i made: month/week/day. switchView() updates display-->
 <div style="text-align: center; margin: 20px 0;">
     <button onclick="switchView('month')" id="btn-month" class="view-btn active">Month</button>
     <button onclick="switchView('week')" id="btn-week" class="view-btn">Week</button>
@@ -37,28 +31,23 @@
 </div>
 
 <!-- 
-    Google Calendar-style calendar view
+    calendar visual taken and modified from this source
     Source: https://codepen.io/ash1198/pen/gbMPXMR
     
-    EDITS MADE:
-    1. Removed jQuery dependency from template (kept in script tag but integrated with our app)
-    2. Modified update_table() function to:
-       - Fetch logs from our Flask backend via /calendar/logs endpoint
-       - Display exercise/diet events within calendar day cells
-       - Show event names (exerciseName or foodName) in each day cell
-       - Limit to 3 events per day with "+X more" indicator
-    3. Changed dayCell structure to flexbox column layout to accommodate events
-    4. Added .day-number and .events classes for better event display
-    5. Modified click handler to show detailed log information from our database
-    6. Integrated with our log type toggle (exercise/diet) to filter displayed events
-    7. Removed standalone date click toast, replaced with log details display
-    8. Added view switcher buttons (Month/Week/Day) - currently only Month is fully implemented
+    changes i made:
+    1. modified update_table() function to better suit my program:
+       - fetch logs from flask backend
+       - displays exercise/diet events in each calendar day cell
+       - shows event names (exerciseName or foodName) in each day cell that the userinputted
+       - limits to 4 events per day and if any more 5th item in cell is "..."
+    2. changed dayCell structure to flexbox column layout to accommodate events
+    3. added .day-number and .events classes for better event display
+    4. when clicking a day cell, taken to the day view with detailed log information from the database
+    5. integrated with our log type toggle (exercise/diet) to filter displayed events
+    6. added time viewswitcher buttons (Month/Week/Day) - default is month view
+    7. used recursion to display logs in the recent logs section
     
-    WHY: The original calendar was a standalone demo. We integrated it with our Flask backend
-    to display actual user logs (exercise and diet entries) from the database, making it
-    a functional history/calendar view for the fitness tracker application.
--->
-<!-- calendar card: topbar (datetime, prev/next year/month), weekdays row, grid of day cells; JS fetches /calendar/logs and injects events -->
+<!-- calendar buttons to traverse dates in topbar (datetime, prev/next year/month), with grid of day cells and weekday row; JS fetches /calendar/logs and injects events -->
 <div id="a2rp6_app">
   <div class="calendar_card">
     <div class="topbar">
@@ -102,7 +91,7 @@
 <div id="dayViewContainer" style="display: none;"></div>
 <div id="weekViewContainer" style="display: none;"></div>
 
-<!-- recent logs list: populated by JS from same /calendar/logs endpoint; shows log type, name, date -->
+<!-- shows recent logs in a list: from the /calendar/logs endpoint. shows log type, name, date -->
 <div id="logsDisplay" style="margin-top: 30px;">
     <h2>Recent Logs</h2>
     <div id="logsList">
@@ -112,11 +101,12 @@
 
 <style>
 /* 
-    Calendar styles
+    Calendar style
     Source: https://codepen.io/ash1198/pen/gbMPXMR
     
-    EDITS MADE:
-    1. Changed .dayCell from fixed height (70px) to min-height to accommodate variable content
+    changes i made:
+    1. Changed .dayCell from fixed height (70px) to min-height to accommodate variable content as 
+       cell changes in height with numb of items(events)
     2. Changed .dayCell display from flex to flex-direction: column to stack day number and events
     3. Added .day-number class for styling the date number separately
     4. Added .events container class for event list styling
@@ -124,9 +114,9 @@
     6. Modified .dayCell.today .event-item to have white background for better visibility on blue today cell
     7. Added z-index to .toast to ensure it appears above calendar content
     
-    WHY: Original calendar cells were fixed height and only showed dates. We needed to display
-    multiple log events per day, so we adapted the layout to be flexible and accommodate
-    dynamic content while maintaining the visual design of the original template.
+    original calendar cells were fixed height and only showed dates. i needed to display
+    multiple log events per day, so adapted the layout to be flexible and accommodate
+    dynamic data but keeping the visual design of the original template.
 */
 * {
   box-sizing: border-box;
@@ -373,17 +363,14 @@
 }
 
 /* 
-    Toggle switch styles
+    Toggle switch style
     Source: https://codepen.io/hktechhub/pen/Ggqpexx
     
-    EDITS MADE:
-    1. Kept all original styling (.hk-toggle, .hk-tg-7, label, ::after pseudo-element)
-    2. No CSS changes needed - the original styles work perfectly for our use case
-    3. All functionality changes were made in JavaScript/HTML structure
     
-    WHY: The original toggle switch CSS was already well-designed with smooth animations
-    and the blue glow effect. We only needed to adapt the HTML structure and JavaScript
-    to integrate it with our log filtering functionality.
+    
+    original toggle switch CSS already smooth animations
+    and the blue glow effect. functionality changes were made in Javascript/HTML
+    to integrate it with log type toggle functionality(exercise/diet)
 */
 .hk-toggle {
   position: relative;
@@ -441,37 +428,36 @@
 </style>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
 <script>
-// Global variables (static URLs from Flask, no Jinja inside JS strings)
+// images i picked out for editing and deleting logs icons in the day view
 var CALENDAR_PENCIL_URL = "{{ url_for('static', filename='images/pencil.webp') }}";
 var CALENDAR_TRASH_URL = "{{ url_for('static', filename='images/trash.webp') }}";
-let currentLogType = 'exercise';
-let logsData = [];
-let currentView = 'month';
-let year, month, day;
+let currentLogType = 'exercise'; // default log type is exercise
+let logsData = []; // array to store logs data
+let currentView = 'month'; // default view is month
+let year, month, day; // variables to store year, month, and day
 
-// Initialize calendar
+// initialise calendar with current month and year
 $(document).ready(function () {
-    console.log("Calendar initialized");
+    console.log("Calendar initialised");
 
     const day_name = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const month_name = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    let now = new Date();
-    year = now.getFullYear();
-    month = now.getMonth();
-    day = now.getDate();
-    window.calendarMonth = month;
-    window.calendarYear = year;
+    let now = new Date(); // get the current date
+    year = now.getFullYear(); // get the current year
+    month = now.getMonth(); // get the current month
+    day = now.getDate(); // get the current day
+    window.calendarMonth = month; // set the current month
+    window.calendarYear = year; // set the current year
 
-    const total_blocks = 42;
+    const total_blocks = 42; // total number of cells in the calendar grid
 
     // Build 42 cells once
     function buildGrid() {
-        $("#a2rp6_grid").html("");
-        for (let i = 1; i <= total_blocks; i++) {
-            $("#a2rp6_grid").append(`<div class="dayCell date_col${i}" data-slot="${i}"></div>`);
+        $("#a2rp6_grid").html(""); // clear the calendar grid
+        for (let i = 1; i <= total_blocks; i++) { // loop through all cells in the calendar grid
+            $("#a2rp6_grid").append(`<div class="dayCell date_col${i}" data-slot="${i}"></div>`); // create the html for the cell
         }
     }
     buildGrid();
@@ -491,16 +477,18 @@ $(document).ready(function () {
     }
 
     function update_table(m, y) {
+        // update the month and year in the topbar
         $(".month_info").text(month_name[m]);
         $(".year_info").text(y);
 
+        // get the first day of the month and the last day of the month to fill the calendar grid
         const firstday_ofmonth = new Date(y, m, 1).getDay();
         const lastdate_ofmonth = new Date(y, m + 1, 0).getDate();
 
-        const today = new Date();
+        const today = new Date(); // get the current date to check if the current month is the current month
         const isThisMonth = (m === today.getMonth() && y === today.getFullYear());
 
-        // Clear all cells
+        // clear all cells in the calendar grid
         for (let i = 1; i <= total_blocks; i++) {
             const $cell = $(".date_col" + i);
             $cell
@@ -510,66 +498,66 @@ $(document).ready(function () {
                 .addClass("isEmpty");
         }
 
-        // Fill dates and events
-        let j = 0;
-        for (let i = 1; i <= total_blocks; i++) {
-            if (i > firstday_ofmonth && ++j <= lastdate_ofmonth) {
-                const $cell = $(".date_col" + i);
-                const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(j).padStart(2, '0')}`;
-                const dayLogs = getLogsForDate(dateStr);
+        // fill the calendar grid with dates and events
+        let j = 0; 
+        for (let i = 1; i <= total_blocks; i++) { // loop through all cells in the calendar grid
+            if (i > firstday_ofmonth && ++j <= lastdate_ofmonth) { // if the cell is within the month
+                const $cell = $(".date_col" + i); // get the cell element
+                const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(j).padStart(2, '0')}`; // get the date string for the cell
+                const dayLogs = getLogsForDate(dateStr); // get the logs for the date
                 
-                $cell.removeClass("isEmpty");
-                $cell.attr("data-date", dateStr);
+                $cell.removeClass("isEmpty"); // remove the empty class from the cell
+                $cell.attr("data-date", dateStr); // set the data-date attribute of the cell to the date string
                 
-                let cellHtml = `<div class="day-number">${j}</div>`;
+                let cellHtml = `<div class="day-number">${j}</div>`; // create the html for the cell
                 
                 if (dayLogs.length > 0) {
-                    cellHtml += '<div class="events">';
-                    const displayCount = Math.min(dayLogs.length, 4);
-                    dayLogs.slice(0, displayCount).forEach(log => {
-                        if (currentLogType === 'exercise') {
-                            const name = log.workoutName || log.exerciseName || 'Unknown Exercise';
+                    cellHtml += '<div class="events">'; // create the html for the events
+                    const displayCount = Math.min(dayLogs.length, 4); // get the number of logs to display
+                    dayLogs.slice(0, displayCount).forEach(log => { // loop through the logs
+                        if (currentLogType === 'exercise') { // if the log type is exercise
+                            const name = log.workoutName || log.exerciseName || 'Unknown Exercise'; // get the name of the exercise
                             cellHtml += `<div class="event-item">${name}</div>`;
                         } else {
-                            const name = log.foodName || 'Unknown Food';
-                            cellHtml += `<div class="event-item">${name}</div>`;
+                            const name = log.foodName || 'Unknown Food'; // get the name of the food
+                            cellHtml += `<div class="event-item">${name}</div>`; // create the html for the event
                         }
                     });
                     if (dayLogs.length > 4) {
-                        cellHtml += `<div class="event-item">...</div>`;
+                        cellHtml += `<div class="event-item">...</div>`; // create the html for the event
                     }
                     cellHtml += '</div>';
                 }
                 
-                $cell.html(cellHtml);
+                $cell.html(cellHtml); // set the html for the cell
 
-                if (isThisMonth && j === today.getDate()) {
-                    $cell.addClass("today");
+                if (isThisMonth && j === today.getDate()) { // if the cell is the current day
+                    $cell.addClass("today"); // add the today class to the cell
                 }
             }
         }
     }
 
-    // Expose for loadLogs callback
+    
     window.calendarUpdateTable = update_table;
 
-    // Button events
+     // previous year button
     $("#prevYear").on("click", function () {
-        year--;
-        window.calendarMonth = month;
-        window.calendarYear = year;
-        update_table(month, year);
-        showToast(`Year: ${year}`);
+        year--; // decrement the year
+        window.calendarMonth = month; // set the current month
+        window.calendarYear = year; // set the current year
+        update_table(month, year); // update the table
+        showToast(`Year: ${year}`); // show the toast
     });
-
+        // next year button
     $("#nextYear").on("click", function () {
-        year++;
-        window.calendarMonth = month;
-        window.calendarYear = year;
-        update_table(month, year);
-        showToast(`Year: ${year}`);
+        year++; // increment the year
+        window.calendarMonth = month; // set the current month
+        window.calendarYear = year; // set the current year
+        update_table(month, year); // update the table
+        showToast(`Year: ${year}`); // show the toast
     });
-
+    // previous month button
     $("#prevMonth").on("click", function () {
         if (month === 0) {
             month = 11;
@@ -577,100 +565,109 @@ $(document).ready(function () {
         } else {
             month--;
         }
-        window.calendarMonth = month;
-        window.calendarYear = year;
-        update_table(month, year);
-        showToast(`${month_name[month]} ${year}`);
+        window.calendarMonth = month; // set the current month
+        window.calendarYear = year; // set the current year
+        update_table(month, year); // update the table
+        showToast(`${month_name[month]} ${year}`); // show the toast
     });
 
     $("#nextMonth").on("click", function () {
         if (month === 11) {
-            month = 0;
-            year++;
+            month = 0; // set the current month to December
+            year++; // increment the year
         } else {
-            month++;
+            month++; // increment the month
         }
-        window.calendarMonth = month;
-        window.calendarYear = year;
-        update_table(month, year);
-        showToast(`${month_name[month]} ${year}`);
+        window.calendarMonth = month; // set the current month
+        window.calendarYear = year; // set the current year
+        update_table(month, year); // update the table
+        showToast(`${month_name[month]} ${year}`); // show the toast
     });
 
     // Click a date cell -> navigate to day view
     $("#a2rp6_grid").on("click", ".dayCell", function () {
-        if ($(this).hasClass("isEmpty")) return;
-        const dateStr = $(this).attr("data-date");
-        if (dateStr) switchView('day', dateStr);
+        if ($(this).hasClass("isEmpty")) return; // if the cell is empty, return
+        const dateStr = $(this).attr("data-date"); // get the date string from the cell
+        if (dateStr) switchView('day', dateStr); // switch to the day view
     });
 
     // Toggle switch functionality
-    const toggle = document.getElementById('logToggle');
-    const logTypeLabel = document.getElementById('logTypeLabel');
-    const exerciseIcon = document.getElementById('exercise_icon');
-    const dietIcon = document.getElementById('diet_icon');
+    const toggle = document.getElementById('logToggle'); // get the toggle element
+    const logTypeLabel = document.getElementById('logTypeLabel'); // get the log type label element
+    const exerciseIcon = document.getElementById('exercise_icon'); // get the exercise icon element
+    const dietIcon = document.getElementById('diet_icon'); // get the diet icon element
 
     // Load initial logs
-    loadLogs('exercise');
+    loadLogs('exercise'); // load the initial logs
 
-    toggle.addEventListener('change', function() {
+    toggle.addEventListener('change', function() { // toggle switch functionality to switch between exercise and diet logs
         if (this.checked) {
-            currentLogType = 'diet';
-            logTypeLabel.textContent = 'Viewing: Diet Logs';
-            exerciseIcon.style.opacity = '0.5';
-            dietIcon.style.opacity = '1';
+            currentLogType = 'diet'; // set the current log type to diet
+            logTypeLabel.textContent = 'Viewing: Diet Logs'; // update the log type label to display diet logs
+            exerciseIcon.style.opacity = '0.5'; // update the exercise icon to be slightly transparent
+            dietIcon.style.opacity = '1'; // update the diet icon to be fully opaque
         } else {
-            currentLogType = 'exercise';
-            logTypeLabel.textContent = 'Viewing: Exercise Logs';
-            exerciseIcon.style.opacity = '1';
-            dietIcon.style.opacity = '0.5';
+            currentLogType = 'exercise'; // set the current log type to exercise
+            logTypeLabel.textContent = 'Viewing: Exercise Logs'; // update the log type label to display exercise logs
+            exerciseIcon.style.opacity = '1'; // update the exercise icon to be fully opaque
+            dietIcon.style.opacity = '0.5'; // update the diet icon to be slightly transparent
         }
-        loadLogs(currentLogType);
+        loadLogs(currentLogType); // load the logs for the current log type
     });
 
-    exerciseIcon.addEventListener('click', function() {
-        toggle.checked = false;
-        toggle.dispatchEvent(new Event('change'));
+    exerciseIcon.addEventListener('click', function() { // exercise icon functionality to switch to diet logs
+        toggle.checked = false; // set the toggle to false
+        toggle.dispatchEvent(new Event('change')); // dispatch the change event
     });
 
-    dietIcon.addEventListener('click', function() {
-        toggle.checked = true;
-        toggle.dispatchEvent(new Event('change'));
+    dietIcon.addEventListener('click', function() { // diet icon functionality to switch to exercise logs
+        toggle.checked = true; // set the toggle to true
+        toggle.dispatchEvent(new Event('change')); // dispatch the change event
     });
 
-    update_table(month, year);
+    update_table(month, year); // update the table
 });
 
 // Load logs from server
-function loadLogs(type) {
+function loadLogs(type) { // load the logs from the server
     fetch('/calendar/logs?type=' + type)
         .then(response => response.json())
         .then(data => {
-            logsData = data;
-            displayLogs(data);
-            if (window.calendarUpdateTable && window.calendarMonth !== undefined && window.calendarYear !== undefined) {
+            logsData = data; // set the logs data to the data
+            displayLogs(data); // display the logs
+            if (window.calendarUpdateTable && window.calendarMonth !== undefined && window.calendarYear !== undefined) { 
+              // if the calendar update table function is defined and the month and year are defined, update the table
                 window.calendarUpdateTable(window.calendarMonth, window.calendarYear);
             }
-            if (currentView === 'day' && window.calendarLastDayViewDate) {
+            if (currentView === 'day' && window.calendarLastDayViewDate) { 
+              // if the current view is day and the last day view date is defined, render the day view
                 renderDayView(window.calendarLastDayViewDate);
             } else if (currentView === 'week' && window.calendarLastWeekViewDate) {
+              // if the current view is week and the last week view date is defined, render the week view
                 renderWeekView(window.calendarLastWeekViewDate);
             }
         })
         .catch(error => {
-            console.error('Error loading logs:', error);
+            console.error('Error loading logs:', error); // log the error
         });
 }
 
-// Display logs in list
+// Display logs in list (recent logs section; up to 10 items, exercise or diet fields per type)
 function displayLogs(logs) {
-    const logsList = document.getElementById('logsList');
-    if (logs.length === 0) {
+    const logsList = document.getElementById('logsList'); // get the list container
+    if (logs.length === 0) { // if no logs, show message and return
         logsList.innerHTML = '<p>No logs found. Start logging your ' + currentLogType + ' activities!</p>';
         return;
     }
 
-    let html = '<ul style="list-style: none; padding: 0;">';
-    logs.slice(0, 10).forEach(log => {
+    let html = '<ul style="list-style: none; padding: 0;">'; // start list html
+
+    // i've implemented recursion instead of a loop: processes one log at a time
+    function renderLogsRecursive(index) {
+        if (index >= Math.min(logs.length, 10)) { // base case: stop after 10 items or end of list
+            return;
+        }
+        const log = logs[index];
         if (currentLogType === 'exercise') {
             html += `<li style="padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px;">`;
             html += `<strong>${log.workoutName || log.exerciseName || 'Exercise'}</strong> - ${log.date}<br>`;
@@ -690,40 +687,44 @@ function displayLogs(logs) {
             html += `${log.mass}g - ${log.calories} cal, ${log.protein}g protein`;
             html += `</li>`;
         }
-    });
+        renderLogsRecursive(index + 1); // recursive call for next log
+    }
+
+    renderLogsRecursive(0); // start recursion at first log
+
     html += '</ul>';
-    logsList.innerHTML = html;
+    logsList.innerHTML = html; // write list into container
 }
 
-// Get logs for a specific date
+// Get logs for a specific date (filter logsData by date string match)
 function getLogsForDate(dateStr) {
     return logsData.filter(log => {
         const logDate = new Date(log.date);
         const targetDate = new Date(dateStr);
-        return logDate.toDateString() === targetDate.toDateString();
+        return logDate.toDateString() === targetDate.toDateString(); // same calendar day
     });
 }
 
-// View switcher
+// view switcher functionality: month/week/day. shows/hides containers and calls render for current view
 function switchView(view, dateStr) {
     currentView = view;
-    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active')); // clear active state
     const btn = document.getElementById('btn-' + view);
-    if (btn) btn.classList.add('active');
+    if (btn) btn.classList.add('active'); // set active on selected button
     
-    if (view === 'month') {
+    if (view === 'month') { // if the view is month, show the month view
         document.getElementById('a2rp6_app').style.display = 'block';
         document.getElementById('dayViewContainer').style.display = 'none';
         document.getElementById('weekViewContainer').style.display = 'none';
         if (window.calendarUpdateTable) window.calendarUpdateTable(window.calendarMonth, window.calendarYear);
-    } else if (view === 'week') {
+    } else if (view === 'week') { // if the view is week, show the week view
         document.getElementById('a2rp6_app').style.display = 'none';
         document.getElementById('dayViewContainer').style.display = 'none';
         document.getElementById('weekViewContainer').style.display = 'block';
         const today = new Date();
         const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
         renderWeekView(dateStr || todayStr);
-    } else if (view === 'day') {
+    } else if (view === 'day') { // if the view is day, show the day view
         document.getElementById('a2rp6_app').style.display = 'none';
         document.getElementById('weekViewContainer').style.display = 'none';
         document.getElementById('dayViewContainer').style.display = 'block';
@@ -733,23 +734,25 @@ function switchView(view, dateStr) {
     }
 }
 
+// goes to today in current view (month week or day view)
 function goToToday() {
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-    if (currentView === 'month') {
+    if (currentView === 'month') { // if the view is month, go to today
         window.calendarMonth = today.getMonth();
         window.calendarYear = today.getFullYear();
         if (window.calendarUpdateTable) window.calendarUpdateTable(window.calendarMonth, window.calendarYear);
-    } else if (currentView === 'week') {
+    } else if (currentView === 'week') { // if the view is week, go to today
         renderWeekView(todayStr);
-    } else if (currentView === 'day') {
+    } else if (currentView === 'day') { // if the view is day, go to today
         renderDayView(todayStr);
     }
 }
 
+// renders day view: title, prev/today/next buttons, list of logs for that date with edit/delete icons
 function renderDayView(dateStr) {
     const date = new Date(dateStr);
-    const dayLogs = getLogsForDate(dateStr);
+    const dayLogs = getLogsForDate(dateStr); // logs for this date
     const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getDay()];
     const monthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][date.getMonth()];
     
@@ -758,14 +761,14 @@ function renderDayView(dateStr) {
     html += '<button onclick="navigateDay(-1, \'' + dateStr + '\')" style="padding: 8px 16px; cursor: pointer;">&#8592; Prev Day</button>';
     html += '<button onclick="goToToday()" style="padding: 8px 16px; margin: 0 10px; cursor: pointer;">Today</button>';
     html += '<button onclick="navigateDay(1, \'' + dateStr + '\')" style="padding: 8px 16px; cursor: pointer;">Next Day &#8594;</button>';
-    html += '</div>';
+    html += '</div>'; // this section contains the previous day, today, and next day buttons
     
-    if (dayLogs.length === 0) {
+    if (dayLogs.length === 0) { // if there are no logs for this day, show a message
         html += '<p>No logs for this day.</p>';
     } else {
-        html += '<div id="dayLogsList" style="margin: 20px 0;">';
+        html += '<div id="dayLogsList" style="margin: 20px 0;">'; // this section contains the list of logs for this date
         dayLogs.forEach(function(log) {
-            const logId = log.logId != null ? log.logId : log.id;
+            const logId = log.logId != null ? log.logId : log.id; // support both response shapes
             const displayName = currentLogType === 'exercise' ? (log.workoutName || log.exerciseName || 'Unknown Exercise') : (log.foodName || 'Unknown Food');
             html += '<div style="padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: space-between;">';
             if (currentLogType === 'exercise') {
@@ -774,10 +777,10 @@ function renderDayView(dateStr) {
                 if (log.duration) html += ' - ' + log.duration + ' min';
                 if (log.caloriesBurned) html += ' - ' + log.caloriesBurned + ' cal';
                 html += '</div>';
-            } else {
+            } else { // if the log type is diet, show the food name, mass, calories, and protein
                 html += '<div><strong>' + displayName + '</strong> - ' + log.mass + 'g - ' + log.calories + ' cal, ' + log.protein + 'g protein</div>';
             }
-            html += '<div style="display: flex; gap: 10px;">';
+            html += '<div style="display: flex; gap: 10px;">'; // this section contains the edit and delete icons
             html += '<img src="' + CALENDAR_PENCIL_URL + '" alt="Edit" style="cursor: pointer; width: 32px; height: 32px;" onclick="editLog(\'' + currentLogType + '\', ' + logId + ', \'' + dateStr + '\')">';
             html += '<img src="' + CALENDAR_TRASH_URL + '" alt="Delete" style="cursor: pointer; width: 32px; height: 32px;" onclick="deleteLog(\'' + currentLogType + '\', ' + logId + ', \'' + dateStr + '\')">';
             html += '</div></div>';
@@ -786,69 +789,74 @@ function renderDayView(dateStr) {
     }
     
     document.getElementById('dayViewContainer').innerHTML = html;
-    window.calendarLastDayViewDate = dateStr;
+    window.calendarLastDayViewDate = dateStr; // store for refresh after loadLogs
 }
 
+// renders week view: 7-day grid; each day shows logs, click day to switch to day view
 function renderWeekView(dateStr) {
     const date = new Date(dateStr);
     const startOfWeek = new Date(date);
-    startOfWeek.setDate(date.getDate() - date.getDay());
+    startOfWeek.setDate(date.getDate() - date.getDay()); // Sunday of this week
     
     let html = '<h2>Week View</h2>';
     html += '<div style="display: flex; justify-content: space-between; margin: 20px 0;">';
     html += '<button onclick="navigateWeek(-1, \'' + dateStr + '\')" style="padding: 8px 16px; cursor: pointer;">&#8592; Prev Week</button>';
     html += '<button onclick="goToToday()" style="padding: 8px 16px; margin: 0 10px; cursor: pointer;">Today</button>';
     html += '<button onclick="navigateWeek(1, \'' + dateStr + '\')" style="padding: 8px 16px; cursor: pointer;">Next Week &#8594;</button>';
-    html += '</div>';
+    html += '</div>'; // this section contains the previous week, today, and next week buttons
     html += '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;">';
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 7; i++) { // loop through each day of the week and display the logs for that day
         const currentDate = new Date(startOfWeek);
         currentDate.setDate(startOfWeek.getDate() + i);
         const dateStr2 = currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0') + '-' + String(currentDate.getDate()).padStart(2, '0');
         const dayLogs = getLogsForDate(dateStr2);
         const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i];
         html += '<div style="border: 1px solid #ddd; border-radius: 5px; padding: 10px; min-height: 200px; cursor: pointer;" onclick="switchView(\'day\', \'' + dateStr2 + '\')"><strong>' + dayName + ' ' + currentDate.getDate() + '</strong>';
-        if (dayLogs.length > 0) {
+        if (dayLogs.length > 0) { // if there are logs for this day, display the logs
             dayLogs.forEach(function(log) {
                 const displayName = currentLogType === 'exercise' ? (log.workoutName || log.exerciseName || 'Unknown Exercise') : (log.foodName || 'Unknown Food');
-                if (currentLogType === 'exercise') {
+                if (currentLogType === 'exercise') { // if the log type is exercise, show the exercise name, sets, reps, duration, and calories burned
                     html += '<div style="margin: 5px 0; padding: 5px; background: #f0f0f0; border-radius: 3px;">' + displayName;
                     if (log.sets && log.reps) html += ' - ' + log.sets + '×' + log.reps;
                     if (log.duration) html += ' - ' + log.duration + ' min';
                     if (log.caloriesBurned) html += ' - ' + log.caloriesBurned + ' cal';
                     html += '</div>';
-                } else {
+                } else { // if the log type is diet, show the food name, mass, calories, and protein
                     html += '<div style="margin: 5px 0; padding: 5px; background: #f0f0f0; border-radius: 3px;">' + displayName + ' - ' + log.mass + 'g - ' + log.calories + ' cal, ' + log.protein + 'g protein</div>';
                 }
             });
-        } else {
+        } else { // if there are no logs for this day, show a message
             html += '<p style="color: #999; font-size: 12px;">No logs</p>';
         }
         html += '</div>';
     }
     html += '</div>';
-    document.getElementById('weekViewContainer').innerHTML = html;
-    window.calendarLastWeekViewDate = dateStr;
+    document.getElementById('weekViewContainer').innerHTML = html; // set the html for the week view container
+    window.calendarLastWeekViewDate = dateStr; // store the last week view date
 }
 
+// moves day view by one day (direction ±1)
 function navigateDay(direction, currentDateStr) {
-    const date = new Date(currentDateStr);
+    const date = new Date(currentDateStr); // create a new date object from the current date string
     date.setDate(date.getDate() + direction);
     const newDateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
     renderDayView(newDateStr);
 }
 
+// moves week view by one week (direction ±1)
 function navigateWeek(direction, currentDateStr) {
-    const date = new Date(currentDateStr);
+    const date = new Date(currentDateStr); // create a new date object from the current date string
     date.setDate(date.getDate() + (direction * 7));
     const newDateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
     renderWeekView(newDateStr);
 }
 
+// redirects to exercise or diet log edit page for this log
 function editLog(type, logId, dateStr) {
-    window.location.href = type === 'exercise' ? '/exercise/log/edit/' + logId + '?date=' + encodeURIComponent(dateStr) : '/diet/log/edit/' + logId + '?date=' + encodeURIComponent(dateStr);
+    window.location.href = type === 'exercise' ? '/exercise/log/edit/' + logId + '?date=' + encodeURIComponent(dateStr) : '/diet/log/edit/' + logId + '?date=' + encodeURIComponent(dateStr); // redirect to the exercise or diet log edit page
 }
 
+// confirms then POSTs to delete exercise or diet log
 function deleteLog(type, logId, dateStr) {
     if (!confirm('Are you sure you want to delete this log?')) return;
     const form = document.createElement('form');

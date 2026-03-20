@@ -118,7 +118,7 @@ def createTables(conn): # function to create the main tables if they do not alre
         """
     ) # executes SQL query to create the goals table
 
-    # body weight logs: simple optional table
+    # body weight logs
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS bodyWeight (
@@ -192,11 +192,21 @@ def defaultExercise(conn): # function to insert default exercises with MET value
     conn.commit() # saves the changes to the database
 
 
-def tips(conn): # function to insert default science based tips into the tips table
+def tips(conn): # function to insert default science based tips into the tips table (no duplicates)
     """
-    inserts some default science based tips into the tips table. simple examples for the app.
+    Inserts default science-based tips. Keeps only one row per (category, title): dedupes
+    existing rows on each run, then inserts each default tip only if it does not already exist.
     """
     cursor = conn.cursor() # gets the database cursor
+
+    # i was having issues with duplicate tips so used this SQL to delete duplicates
+    cursor.execute(
+        """
+        DELETE FROM tips WHERE id NOT IN (
+            SELECT id FROM (SELECT MIN(id) AS id FROM tips GROUP BY category, title)
+        );
+        """
+    )
 
     default_tips = [
         ("exercise", "Progressive Overload", "Gradually increase the weight, reps, or sets over time to continue making progress. This is the key principle behind strength training.", "Exercise Science Basics"),
@@ -210,20 +220,23 @@ def tips(conn): # function to insert default science based tips into the tips ta
         # creates a list of default tips with their category, title, content and source
 
     for category, title, content, source in default_tips:
-        cursor.execute(
-            """
-            INSERT OR IGNORE INTO tips (category, title, content, source)
-            VALUES (?, ?, ?, ?);
-            """,
-            (category, title, content, source),
-        ) # executes SQL query to insert the tip
+        cursor.execute("SELECT 1 FROM tips WHERE category = ? AND title = ? LIMIT 1;", (category, title)) # to avoid duplicates
+        if cursor.fetchone() is None: # only insert if this (category, title) is not already present
+            cursor.execute(
+                """
+                INSERT INTO tips (category, title, content, source)
+                VALUES (?, ?, ?, ?);
+                """,
+                (category, title, content, source),
+            ) # executes SQL query to insert the tip
 
     conn.commit() # saves the changes to the database
 
 
-def currentTime(): # function to return the current time as a string
+def currentTime(): 
     """
-    returns the current time as a simple string. useful for createdAt and date fields.
+    returns the current time as a string
+     useful for createdAt and date fields
     """
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 

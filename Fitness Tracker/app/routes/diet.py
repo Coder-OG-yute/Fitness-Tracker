@@ -10,8 +10,8 @@ from ..utils.fatsecret_api import getFoodMacro
 diet_bp = Blueprint("diet", __name__)
 
 
-@diet_bp.route("/diet/log", methods=["GET", "POST"]) # route for logging a food item
-def dietLog(): # function to show diet log form (GET) or save a food entry (POST)
+@diet_bp.route("/diet/log", methods=["GET", "POST"], endpoint="diet_log") # route for logging a food item
+def diet_log(): # function to show diet log form (GET) or save a food entry (POST)
     """
     handles logging a food item with its mass in grams:
 
@@ -35,13 +35,13 @@ def dietLog(): # function to show diet log form (GET) or save a food entry (POST
             mass = float(massStr)
         except (TypeError, ValueError):# if the mass is not a valid number
             flash("Please enter a valid number for mass in grams.", "error") # displays error message to the user
-            return render_template("dietLog.html") # renders the diet log template
+            return render_template("diet_log.html") # renders the diet log template
 
         # 2) use the nutrition helper from FatSecret to get calories and protein
         result = calcNutrients(foodInp, mass)
         if result is None: # if no results are found
             flash("No results found for that food. Please try a different name.", "error") # displays error message to the user
-            return render_template("dietLog.html") # renders the diet log template
+            return render_template("diet_log.html") # renders the diet log template
 
         foodName = result["foodName"] # gets the food name from the result
         calories = result["calories"] # gets the calories from the result
@@ -50,16 +50,16 @@ def dietLog(): # function to show diet log form (GET) or save a food entry (POST
         # 3) validate date (year between 1900 and 2200)
         if not dateVal or dateVal.strip() == "": # if the dateVal is false or is empty (.strip used to remove whitespace from the beginning and end of the string)
             flash("Please enter a date.", "error") # displays error message to the user
-            return render_template("dietLog.html")# renders the diet log template
+            return render_template("diet_log.html")# renders the diet log template
         try: # try to convert the date to a datetime object
             import datetime
             dateObj = datetime.datetime.strptime(dateVal, "%Y-%m-%d") # converts the date to a datetime object
             if dateObj.year < 1900 or dateObj.year > 2200: # if the year is not between 1900 and 2200
                 flash("Year must be between 1900 and 2200.", "error") # displays error message to the user
-                return render_template("dietLog.html") # renders the diet log template
+                return render_template("diet_log.html") # renders the diet log template
         except ValueError: # if the date is not a valid date
             flash("Please enter a valid date.", "error") # displays error message to the user
-            return render_template("dietLog.html") # renders the diet log template
+            return render_template("diet_log.html") # renders the diet log template
 
         db = g.db # gets the database connection
         cursor = db.cursor() # gets the database cursor
@@ -76,7 +76,7 @@ def dietLog(): # function to show diet log form (GET) or save a food entry (POST
         return redirect(url_for("dashboard.home")) # redirects the user to the dashboard
 
     # if the request is GET, show the empty form
-    return render_template("dietLog.html") # renders the diet log template
+    return render_template("diet_log.html") # renders the diet log template
 
 
 

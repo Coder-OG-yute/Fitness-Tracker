@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <!-- 
     Website template structure
-    Source: https://codepen.io/ash1198/pen/WbxEgzb (Forward Fitness Club template by Christopher DeLeon)
+    Source: https://codepen.io/ash1198/pen/WbxEgzb 
+    and https://github.com/Vroomfrondal/Fitness-Website (Forward Fitness Club template by Christopher DeLeon)
     
-    EDITS MADE:
-    1. Converted from static HTML to Jinja2 template with extends and block syntax
-    2. Replaced hardcoded navigation links with Flask url_for() calls for dynamic routing
-    3. Added session-based conditional rendering:
-       - Show different nav items for logged-in vs logged-out users
-       - Display username in navigation bar when logged in
-    4. Added "Log" dropdown menu with sub-items (Exercise, Diet, Weight) - not in original template
-    5. Integrated Flask flash message system for user feedback
-    6. Added block content for child templates to extend
-    7. Replaced static script includes with url_for('static', ...) for Flask static file serving
-    8. Modified hamburger() function to only toggle menu-links, keeping logo visible
-    9. Added custom JavaScript files (validation.js, date-helpers.js) for our application features
-    10. Removed original template's specific content (hero images, about sections, etc.) - kept only structure
-    
-    WHY: The original template was a complete static website. We adapted it to be a base template
-    for our Flask application, maintaining the visual design and responsive layout while making
-    it dynamic and integrated with our authentication system and routing structure.
--->
+     edits made: (parts with in depth commenting)
+
+    1. changed HTML layout into a Jinja2 template to use blocks and extends so that all pages can inherit this template and its content
+    2. got rid of hardcoded links(static links that are unchanging) and used Flask's url_for() instead so it's dynamic and doesn't break if routes change
+    3. changed navbar
+    4. made a "Log" dropdown for Exercise, Diet, and Weight logs
+    5. put in Flask flash messages to display user feedback (like errors or success)
+    6. pages can inject their own content into the main content block 
+    7. changed all script tags to use url_for('static', ...) so Flask serves static files properly
+    8. changedthe hamburger icon JS so it only toggles the nav menu and keeps the logo showing on mobile
+    9. linked in some custom JavaScript I wrote (validation.js, date-helpers.js), which help with form checking and dates
+    10. deleted the original filler content (like gym pictures and about sections)
+--> 
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +29,7 @@
 
     <div id="container">
     
-        <!-- Mobile Nav - Source: https://codepen.io/ash1198/pen/WbxEgzb -->
+        <!-- Mobile nav - Source: https://codepen.io/ash1198/pen/WbxEgzb -->
         <nav class="mobile-nav">
             <div id="menu-links">
                 {% if session.get('userId') %}
@@ -124,7 +120,7 @@
     <script src="{{ url_for('static', filename='js/date-helpers.js') }}"></script>
     <script>
     // hamburger menu: toggles menu-links visibility on mobile (logo stays visible)
-    // EDITED: Only toggles the menu links, keeps the logo visible (original hid logo on mobile)
+    // edit: Only toggles the menu links, keeps the logo visible (the original hid the logo on mobile)
     function hamburger() {
         var menu = document.getElementById("menu-links");
         if (menu.style.display === "block") {

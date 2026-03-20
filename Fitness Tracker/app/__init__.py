@@ -5,60 +5,55 @@ from .utils.db import connect, createTables, defaultExercise, tips
 
 def create_app():
     """
-    App factory function.
-    This creates the Flask app, sets basic configuration,
-    and prepares the database. Kept simple and readable.
+    Creates the Flask app, sets basic configuration and prepares the database
+   
     """
-    # Calculate the base directory (project root)
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    static_folder = os.path.join(base_dir, "static")
-    template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+    # calculates the base directory (the root directory of the project)
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))# gets the directory of the file
+    static_folder = os.path.join(base_dir, "static") # this is the folder that contains the static files like css, js, images, etc.
+    template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates") # this is the folder that contains the template files like html, jinja2, etc.
 
-    # Create Flask app with explicit static and template folder paths
-    # This ensures Flask finds static files in the root-level static/ directory
+    # creates the Flask app with explicit static and template folder paths
+    # this ensures Flask finds the static files in the directory
     app = Flask(__name__, 
                 static_folder=static_folder,
                 static_url_path="/static",
-                template_folder=template_folder)
+                template_folder=template_folder) # creates the Flask app with the static and template folder paths
 
-    # Secret key is needed for sessions (login).
-    # In a real project you would load this from an environment variable.
-    app.config["SECRET_KEY"] = "change_this_in_production"
+    # im creating a secret key needed for sessions - login system - to encrypt the session data for security
+    app.config["SECRET_KEY"] = "FittyFitFit" # secret key
+    # path to the SQLite database file in database folder
+    db_path = os.path.join(base_dir, "database", "fitness_tracker.db") # joins the base directory and the database folder and the database file
+    app.config["DATABASE_PATH"] = db_path # sets the database path to the database file
 
-    # Path to the SQLite database file (in the local 'database' folder).
-    db_path = os.path.join(base_dir, "database", "fitness_tracker.db")
-    app.config["DATABASE_PATH"] = db_path
-
-    # Make sure database and tables exist on startup.
-    # Note: In Flask 3.0+, before_first_request is deprecated.
-    # We initialize the database when the app is created instead.
-    with app.app_context():
-        conn = connect(app.config["DATABASE_PATH"])
-        if conn is not None:
-            createTables(conn)
-            defaultExercise(conn)
-            tips(conn)
-            conn.close()
+    # makes sure and verifies the database and tables exist on startup in case of any errors or missing tables
+    with app.app_context():# provides Flask application its configuration for the current request
+        conn = connect(app.config["DATABASE_PATH"]) # connects to the database
+        if conn is not None: # if the connection is not None
+            createTables(conn) # creates the tables
+            defaultExercise(conn) # inserts the default exercises
+            tips(conn) # inserts the tips
+            conn.close() # closes the connection
 
     @app.before_request
     def load_db():
         """
-        Open a database connection for each request and store it in `g`.
-        This keeps things simple and avoids passing the connection around.
+        opens a database connection for each request and stores it in `g`
+        avoids passing the connection around in each route
         """
         if "db" not in g:
-            g.db = connect(app.config["DATABASE_PATH"])
+            g.db = connect(app.config["DATABASE_PATH"]) # connects to the database
 
     @app.teardown_appcontext
     def close_db(exception):
         """
-        Close the database connection when the request is finished.
+        closes the database connection when the request is finished
         """
-        db = g.pop("db", None)
-        if db is not None:
-            db.close()
+        db = g.pop("db", None) # pops the database connection from the global object g
+        if db is not None: # if the database connection is not None
+            db.close() # closes the database connection
 
-    # Register blueprints (route modules).
+    # registers blueprints (the route modules for each page)
     from .routes.auth import auth_bp
     from .routes.exercise import exercise_bp
     from .routes.diet import diet_bp

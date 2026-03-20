@@ -101,7 +101,7 @@ def goalsProgress(): # function to return goal progress data for all user goals 
             "description": goal.desc,  # goal description for the chart
             "targetValue": goal.targetValue,#assigns the target value to the data
             "currentValue": goal.currentValue,#assigns the current value to the data
-            "progressPercent": progress,#assigns the progress percentage to the data
+            "progress_percent": progress,#assigns the progress percentage to the data
             "unit": goal.unit})#assigns the unit to the data
 
     return jsonify(dataList) # returns the data as JSON

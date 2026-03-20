@@ -3,35 +3,29 @@
 <!-- goals page: form to create a goal (type, target value, unit, date, description); list of goals with edit/update/delete -->
 <h1>Your Goals</h1>
 
-<!-- Form to create a new goal -->
 <form method="POST">
-    <label for="goalType">Goal type:</label>
-    <select id="goalType" name="goalType" required>
+    <label for="goalType">Goal type:</label> <!-- label for goal type select -->
+    <select id="goalType" name="goalType" required> <!-- select nutrient, strength, weight, or cardio -->
         <option value="nutrient">Nutrient</option>
         <option value="strength">Strength</option>
         <option value="weight">Weight</option>
         <option value="cardio">Cardio</option>
     </select>
     <br>
-
-    <label for="targetValue">Target value:</label>
-    <input type="number" step="0.1" id="targetValue" name="targetValue" required>
+    <label for="targetValue">Target value:</label> <!-- label for target value input -->
+    <input type="number" step="0.1" id="targetValue" name="targetValue" required> <!-- input for target value -->
     <br>
-
-    <label for="unit">Unit (e.g. g, kg, cal, km, reps):</label>
-    <input type="text" id="unit" name="unit" required>
+    <label for="unit">Unit (e.g. g, kg, cal, km, reps):</label> <!-- label for unit input -->
+    <input type="text" id="unit" name="unit" required> <!-- input for unit -->
     <br>
-
-    <label for="targetDate">Target date:</label>
-    <input type="date" id="targetDate" name="targetDate" required min="1900-01-01" max="2200-12-31">
-    <button type="button" onclick="setToday('targetDate')" style="margin-left: 10px;">Today</button>
+    <label for="targetDate">Target date:</label> <!-- label for target date input -->
+    <input type="date" id="targetDate" name="targetDate" required min="1900-01-01" max="2200-12-31"> <!-- input for target date -->
+    <button type="button" onclick="setToday('targetDate')" style="margin-left: 10px;">Today</button> <!-- button to set today's date -->
     <br>
-
-    <label for="description">Goal:</label>
-    <input type="text" id="description" name="description" required>
+    <label for="description">Goal:</label> <!-- label for goal description input -->
+    <input type="text" id="description" name="description" required> <!-- input for goal description -->
     <br>
-
-    <button type="submit">Create Goal</button>
+    <button type="submit">Create Goal</button> <!-- button to submit and create goal -->
 </form>
 
 <h2>Existing Goals</h2>
@@ -39,27 +33,34 @@
     <li>• Go to Analytics to view goals</li>
 </ul>
 {% if goals %}
-    <!-- each goal: description, type, target/current/progress%; edit (prompt then POST /goals/edit/id), delete (confirm then POST /goals/delete/id), update progress (prompt then POST /goals/update/id) -->
+    <!-- list of goals: each item has desc, type, target/current/progress
+      edit, delete, update progress buttons -->
     <ul style="list-style: none; padding: 0;">
         {% for g in goals %}
-            <li style="padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: space-between;">
-                <div>
+            <li style="padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: space-between;"> <!-- one goal row -->
+                <div> <!-- goal text: description, type, target, current, progress % -->
                     {{ g.desc }} ({{ g.goalType }}) - Target: {{ g.targetValue }} {{ g.unit }},
                     Current: {{ g.currentValue }} {{ g.unit }},
                     Progress: {{ g.calcProgress() }}%
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center;"> <!-- edit, delete, update progress controls -->
                     <img src="{{ url_for('static', filename='images/pencil.webp') }}" 
                          alt="Edit" 
                          class="icon-standard" 
                          style="cursor: pointer; width: 32px; height: 32px;"
-                         onclick="editGoal({{ g.goalID }}, '{{ g.desc }}', {{ g.targetValue }}, '{{ g.targetDate }}', '{{ g.unit }}')">
+                         data-goal-id="{{ g.goalID }}"
+                         data-desc="{{ g.desc|e }}"
+                         data-target="{{ g.targetValue }}"
+                         data-date="{{ g.targetDate }}"
+                         data-unit="{{ g.unit|e }}"
+                         onclick="editGoalFromEl(this)"> <!-- edit icon: opens prompt then POST /goals/edit/<id> -->
                     <img src="{{ url_for('static', filename='images/trash.webp') }}" 
                          alt="Delete" 
                          class="icon-standard" 
                          style="cursor: pointer; width: 32px; height: 32px;"
-                         onclick="deleteGoal({{ g.goalID }})">
-                    <button type="button" onclick="updateProgress({{ g.goalID }}, {{ g.currentValue }})" style="padding: 5px 10px; font-size: 12px;">Update Progress</button>
+                         data-goal-id="{{ g.goalID }}"
+                         onclick="deleteGoalFromEl(this)"> <!-- delete icon: confirm then POST /goals/delete/<id> -->
+                    <button type="button" data-goal-id="{{ g.goalID }}" data-current="{{ g.currentValue }}" onclick="updateProgressFromEl(this)" style="padding: 5px 10px; font-size: 12px;">Update Progress</button> <!-- button: prompt for current value then POST /goals/update/<id> -->
                 </div>
             </li>
         {% endfor %}
@@ -69,6 +70,11 @@
 {% endif %}
 
 <script>
+function editGoalFromEl(el) { //called to edit a goal
+//  reads the data attributes and calls editGoal with the data
+    editGoal(el.dataset.goalId, el.dataset.desc, el.dataset.target, el.dataset.date, el.dataset.unit);
+}
+// editGoal: prompt for new desc, target, date, unit then POST to /goals/edit/<id>
 function editGoal(goalId, currentDescription, currentTarget, currentDate, currentUnit) {
     const newDescription = prompt('Enter goal name:', currentDescription);
     const newTarget = prompt('Enter target value:', currentTarget);
@@ -76,10 +82,10 @@ function editGoal(goalId, currentDescription, currentTarget, currentDate, curren
     const newUnit = prompt('Enter unit:', currentUnit);
     
     if (newDescription !== null && newTarget !== null && newDate !== null && newUnit !== null) {
-        const form = document.createElement('form');
+        const form = document.createElement('form'); // build form for POST
         form.method = 'POST';
         form.action = '/goals/edit/' + goalId;
-        form.innerHTML = `
+        form.innerHTML = ` 
             <input type="hidden" name="description" value="${newDescription}">
             <input type="hidden" name="targetValue" value="${newTarget}">
             <input type="hidden" name="targetDate" value="${newDate}">
@@ -90,16 +96,22 @@ function editGoal(goalId, currentDescription, currentTarget, currentDate, curren
     }
 }
 
+// read delete icon data attributes and call deleteGoal
+function deleteGoalFromEl(el) {
+    deleteGoal(el.dataset.goalId);
+}
+// read update button data attributes and call updateProgress
+function updateProgressFromEl(el) {
+    updateProgress(el.dataset.goalId, el.dataset.current);
+}
 // updateProgress: prompt for new current value then POST to /goals/update/<id>
 function updateProgress(goalId, currentValue) {
     const newValue = prompt('Enter new current value:', currentValue);
     if (newValue !== null && newValue !== '') {
-        const form = document.createElement('form');
+        const form = document.createElement('form'); // build form for POST
         form.method = 'POST';
         form.action = '/goals/update/' + goalId;
-        form.innerHTML = `
-            <input type="hidden" name="currentValue" value="${newValue}">
-        `;
+        form.innerHTML = `<input type="hidden" name="currentValue" value="${newValue}">`;
         document.body.appendChild(form);
         form.submit();
     }
@@ -108,7 +120,7 @@ function updateProgress(goalId, currentValue) {
 // deleteGoal: confirm then POST to /goals/delete/<id>
 function deleteGoal(goalId) {
     if (confirm('Are you sure you want to delete this goal?')) {
-        const form = document.createElement('form');
+        const form = document.createElement('form'); // build form for POST
         form.method = 'POST';
         form.action = '/goals/delete/' + goalId;
         document.body.appendChild(form);

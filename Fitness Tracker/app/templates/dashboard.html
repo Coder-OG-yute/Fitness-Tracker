@@ -1,14 +1,14 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} <!-- extends the base template -->
+{% block content %} <!-- injects content into the main content block -->
 <!-- dashboard home page: welcomes the user and links to all features via nav -->
 <h1>Welcome to your Fitness Dashboard</h1>
 
 {% if username %}
-    <!-- if username is in context (logged-in user), display greeting -->
+    <!-- if username in context (logged-in), show greeting -->
     <p>Hello, {{ username }}! This is your main page.</p>
 {% endif %}
 
-<!-- instruction to use nav for exercise, diet, weight, workouts, goals, analytics, tips, calendar -->
+<!-- use nav for exercise, diet, weight, workouts, goals, analytics, tips, calendar -->
 <p>Use the navigation bar above to access all features.</p>
 {% endblock %}
 

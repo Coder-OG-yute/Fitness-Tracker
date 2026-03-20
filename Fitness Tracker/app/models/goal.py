@@ -23,15 +23,19 @@ class Goal:
 
     def calcProgress(self):
         """
-        a simple progress calculation assuming:
-        - For things like protein or strength, we compare currentValue to targetValue.
+        simple progress calculation assuming:
+        - things like protein or strength, compare currentValue to targetValue
         - Progress is displayed as percentage, limited at 100%.
         """
-        if self.targetValue == 0:
-            return 0 
-        else:
-            percentage = (self.currentValue / self.targetValue) * 100 # calculates the progress as a percentage
-            return round(percentage, 1) # returns rounded percentage to 1 decimal place
+        try:
+            target = float(self.targetValue or 0)
+            current = float(self.currentValue or 0)
+        except (TypeError, ValueError):
+            return 0
+        if target == 0:
+            return 0
+        percentage = (current / target) * 100 # calculates the progress as a percentage
+        return round(min(percentage, 100.0), 1) # returns rounded percentage, capped at 100%
 
     def saveToDB(self, userId):
         """

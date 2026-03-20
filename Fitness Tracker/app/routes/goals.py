@@ -4,18 +4,18 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 
 from ..models.goal import Goal
 
-# blueprint for goal-related pages and API endpoints
-# server side scripting -the request object to get what the user sent (form data) and response like redirect and render_template; sending them to the right page or showing a template
+# blueprint for goal related pages and API endpoints
+
 goals_bp = Blueprint("goals", __name__)
 
 
 @goals_bp.route("/goals", methods=["GET", "POST"]) # route for goals page
 def goals_page(): # function to show all goals (GET) or create a new goal (POST)
     """
-    shows all goals and allows the user to create a new one.
+    shows all goals and allows the user to create a new one:
 
-    1. If the request is GET, loads goals from the database and renders the goals template
-    2. If the request is POST, reads the form data, creates a Goal and saves it to the database
+    1. if the request is GET, loads goals from the database and renders the goals template
+    2. if the request is POST, reads the form data, creates a goal and saves it to the database
     """
     if "userId" not in session: # if user is not logged in, redirect to login page
         return redirect(url_for("auth.login")) # redirect to login page
@@ -27,7 +27,7 @@ def goals_page(): # function to show all goals (GET) or create a new goal (POST)
         unit = request.form.get("unit") # gets the unit from the form
         description = request.form.get("description") # gets the description from the form
 
-        newGoal = Goal(goalType, targetValue, targetDate, unit, description) # creates a new Goal object
+        newGoal = Goal(goalType, targetValue, targetDate, unit, description) # creates a new goal object
         newGoal.saveToDB(session["userId"]) # saves the goal to the database
         flash("Goal created.", "success") # displays success message to the user
         return redirect(url_for("goals.goals_page")) # redirects the user to the goals page
@@ -38,9 +38,7 @@ def goals_page(): # function to show all goals (GET) or create a new goal (POST)
 
 @goals_bp.route("/goals/edit/<int:goal_id>", methods=["POST"]) # route for editing goal details
 def edit_goal(goal_id): # function to update goal description, target value, target date and unit
-    """
-    edits goal details (desc, targetValue, targetDate, unit). separate from updating progress (currentValue).
-    """
+    
     if "userId" not in session: # if user is not logged in, redirect to login page
         return redirect(url_for("auth.login")) # redirect to login page
 
@@ -125,41 +123,4 @@ def delete_goal(goal_id): # function to delete the goal from the database
     flash("Goal deleted.", "success") # displays success message to the user
     return redirect(url_for("goals.goals_page")) # redirects the user to the goals page
 
-
-@goals_bp.route("/goals/<int:goal_id>/progress") # route for getting goal progress as JSON
-def goal_progress(goal_id): # function to return progress data for a specific goal as JSON (e.g. for charts)
-    """
-    returns progress data for a specific goal as JSON. can be used for charts.
-    """
-    if "userId" not in session: # if user is not logged in, return error
-        return jsonify({"error": "Not logged in"}), 401
-
-    db = g.db # gets the database connection
-    cursor = db.cursor() # gets the database cursor
-    cursor.execute("SELECT * FROM goals WHERE id = ? AND userId = ?;", (goal_id, session["userId"])) # executes SQL query to get the goal
-    row = cursor.fetchone() # fetches the row from the database
-    if row is None:
-        return jsonify({"error": "Goal not found"}), 404
-
-    goalObj = Goal(
-        row["goalType"],
-        row["targetValue"],
-        row["targetDate"],
-        row["unit"],
-        row["description"],
-        goalID=row["id"],
-        currentValue=row["currentValue"],
-    ) # creates a Goal object from the row
-
-    progress = goalObj.calcProgress() # calculates the progress percentage
-
-    return jsonify({
-        "goalID": goalObj.goalID,
-        "description": goalObj.desc,
-        "targetValue": goalObj.targetValue,
-        "currentValue": goalObj.currentValue,
-        "progressPercent": progress,
-        "unit": goalObj.unit,
-        "isAchieved": progress >= 100
-    }) # returns the progress data as JSON
 

@@ -1,21 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-<!-- diet log page: form for food name and mass in grams; backend uses FatSecret API for calories and protein -->
+<!-- diet log page: form for food name and mass; POST to diet route, backend uses FatSecret API for calories and protein -->
 <h1>Log Food</h1>
 
-<!-- This form lets the user type the name of a food and how many grams they ate.; POST sends to diet log route which calls FatSecret API -->
+<!-- form: foodName, mass (g), date; POST to diet log route which calls FatSecret API -->
 <form method="POST">
-    <label for="foodName">Food name:</label>
-    <input type="text" id="foodName" name="foodName" required>
+    <label for="foodName">Food name:</label> <!-- label for food name input -->
+    <input type="text" id="foodName" name="foodName" required> <!-- input for food name -->
     <br>
-    <label for="mass">Mass (in grams):</label>
-    <input type="number" step="1" id="mass" name="mass" min="1" required>
+    <label for="mass">Mass (in grams):</label> <!-- label for mass input -->
+    <input type="number" step="1" id="mass" name="mass" min="1" required> <!-- input for mass -->
     <br>
-    <label for="date">Date:</label>
-    <input type="date" id="date" name="date" min="1900-01-01" max="2200-12-31" required>
-    <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button>
+    <label for="date">Date:</label> <!-- label for date input -->
+    <input type="date" id="date" name="date" min="1900-01-01" max="2200-12-31" required> <!-- input for date with valid range -->
+    <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button> <!-- button to set today's date -->
     <br>
-    <button type="submit">Save Food</button>
+    <button type="submit">Save Food</button> <!-- button to save the food -->
 </form>
 {% endblock %}
-

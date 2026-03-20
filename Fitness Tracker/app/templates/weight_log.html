@@ -1,45 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
-<!-- weight log page: form to log weight and date, or edit an existing entry; weight history table below -->
+<!-- weight log page: form to log weight and date, or edit an existing entry
+ with weight history table below -->
 <h1>Log Body Weight</h1>
 
 {% if edit_entry %}
-<!-- Edit existing entry -->
-<form method="POST" action="{{ url_for('dashboard.edit_weight', entry_id=edit_entry.id) }}">
-    <div class="form-group">
-        <label for="weight">Weight (kg):</label>
-        <input type="number" id="weight" name="weight" step="0.1" min="0.1" value="{{ edit_entry.weight }}" required>
+<!-- edit existing entry: POSTs to edit_weight -->
+<form method="POST" action="{{ url_for('dashboard.edit_weight', entry_id=edit_entry.id) }}"> <!-- POST to edit_weight -->
+    <div class="form-group"> <!-- weight input for edit -->
+        <label for="weight">Weight (kg):</label> <!-- label for weight input -->
+        <input type="number" id="weight" name="weight" step="0.1" min="0.1" value="{{ edit_entry.weight }}" required> <!-- input for weight in kg -->
     </div>
-    <div class="form-group">
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" min="1900-01-01" max="2200-12-31" value="{{ edit_entry.date }}" required>
-        <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button>
+    <div class="form-group"> <!-- date input for edit -->
+        <label for="date">Date:</label> <!-- label for date input -->
+        <input type="date" id="date" name="date" min="1900-01-01" max="2200-12-31" value="{{ edit_entry.date }}" required> <!-- input for date -->
+        <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button> <!-- button to set today's date -->
     </div>
-    <button type="submit" class="btn">Update</button>
-    <a href="{{ url_for('dashboard.log_weight') }}" class="btn" style="margin-left: 10px;">Cancel</a>
+    <button type="submit" class="btn">Update</button> <!-- button to submit update -->
+    <a href="{{ url_for('dashboard.log_weight') }}" class="btn" style="margin-left: 10px;">Cancel</a> <!-- link to cancel and go back to weight log -->
 </form>
 {% else %}
-<!-- when not editing: form to log new weight and date; POST to dashboard log_weight -->
-<form method="POST" action="{{ url_for('dashboard.log_weight') }}">
-    <div class="form-group">
-        <label for="weight">Weight (kg):</label>
-        <input type="number" id="weight" name="weight" step="0.1" min="0.1" required>
-        <small>Enter your weight in kilograms (e.g., 70.5)</small>
+<!-- when not editing: form to log new weight and date; POSTs to dashboard log_weight -->
+<form method="POST" action="{{ url_for('dashboard.log_weight') }}"> <!-- POST to log_weight -->
+    <div class="form-group"> <!-- weight input for new entry -->
+        <label for="weight">Weight (kg):</label> <!-- label for weight input -->
+        <input type="number" id="weight" name="weight" step="0.1" min="0.1" required> <!-- input for weight in kg -->
+        <small>Enter your weight in kilograms (e.g., 70.5)</small> <!-- hint text -->
     </div>
-
-    <div class="form-group">
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" min="1900-01-01" max="2200-12-31" required>
-        <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button>
+    <div class="form-group"> <!-- date input for new entry -->
+        <label for="date">Date:</label> <!-- label for date input -->
+        <input type="date" id="date" name="date" min="1900-01-01" max="2200-12-31" required> <!-- input for date -->
+        <button type="button" onclick="setToday('date')" style="margin-left: 10px;">Today</button> <!-- button to set today's date -->
     </div>
-
-    <input type="submit" value="Log Weight" class="btn">
+    <input type="submit" value="Log Weight" class="btn"> <!-- button to submit and log weight -->
 </form>
 
 {% if weightEntries %}
-<!-- weight history table: date, weight; each row has edit link and delete form (dashboard edit_weight, delete_weight) -->
+<!-- weight history table: date, weight; each row has edit link and delete form (POSTs to dashboard edit_weight, delete_weight) -->
 <h2 style="margin-top: 24px;">Weight History</h2>
-<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+<table style="width: 100%; border-collapse: collapse; margin-top: 10px;"> <!-- table of past weight entries -->
     <thead>
         <tr style="border-bottom: 2px solid #ddd;">
             <th style="text-align: left; padding: 8px;">Date</th>
@@ -49,16 +48,16 @@
     </thead>
     <tbody>
         {% for entry in weightEntries %}
-        <tr style="border-bottom: 1px solid #eee;">
+        <tr style="border-bottom: 1px solid #eee;"> <!-- one row per weight entry -->
             <td style="padding: 8px;">{{ entry.date }}</td>
             <td style="padding: 8px;">{{ entry.weight }}</td>
-            <td style="padding: 8px; text-align: right;">
-                <a href="{{ url_for('dashboard.edit_weight', entry_id=entry.id) }}" title="Edit">
-                    <img src="{{ url_for('static', filename='images/pencil.webp') }}" alt="Edit" style="width: 24px; height: 24px; vertical-align: middle;">
+            <td style="padding: 8px; text-align: right;"> <!-- edit link and delete form -->
+                <a href="{{ url_for('dashboard.edit_weight', entry_id=entry.id) }}" title="Edit"> <!-- link to edit this entry -->
+                    <img src="{{ url_for('static', filename='images/pencil.webp') }}" alt="Edit" style="width: 24px; height: 24px; vertical-align: middle;"> <!-- edit icon -->
                 </a>
-                <form method="POST" action="{{ url_for('dashboard.delete_weight', entry_id=entry.id) }}" style="display: inline; margin-left: 8px;" onsubmit="return confirm('Delete this weight entry?');">
-                    <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer;" title="Delete">
-                        <img src="{{ url_for('static', filename='images/trash.webp') }}" alt="Delete" style="width: 24px; height: 24px; vertical-align: middle;">
+                <form method="POST" action="{{ url_for('dashboard.delete_weight', entry_id=entry.id) }}" style="display: inline; margin-left: 8px;" onsubmit="return confirm('Delete this weight entry?');"> <!-- form to delete this entry -->
+                    <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer;" title="Delete"> <!-- delete button -->
+                        <img src="{{ url_for('static', filename='images/trash.webp') }}" alt="Delete" style="width: 24px; height: 24px; vertical-align: middle;"> <!-- delete icon -->
                     </button>
                 </form>
             </td>
@@ -67,14 +66,14 @@
     </tbody>
 </table>
 {% if total_pages > 1 %}
-<!-- pagination: prev/next links when there is more than one page -->
-<div style="margin-top: 16px; display: flex; align-items: center; gap: 12px;">
+<!-- how pages are set up of weight logs: prev/next links when there is more than one page -->
+<div style="margin-top: 16px; display: flex; align-items: center; gap: 12px;"> <!-- pagination controls -->
     {% if page > 1 %}
-    <a href="{{ url_for('dashboard.log_weight', page=page - 1) }}">&#8592; Prev</a>
+    <a href="{{ url_for('dashboard.log_weight', page=page - 1) }}">&#8592; Prev</a> <!-- link to previous page -->
     {% endif %}
     <span>Page {{ page }} of {{ total_pages }}</span>
     {% if page < total_pages %}
-    <a href="{{ url_for('dashboard.log_weight', page=page + 1) }}">Next &#8594;</a>
+    <a href="{{ url_for('dashboard.log_weight', page=page + 1) }}">Next &#8594;</a> <!-- link to next page -->
     {% endif %}
 </div>
 {% endif %}
@@ -82,5 +81,5 @@
 {% endif %}
 
 <!-- link back to dashboard -->
-<p style="margin-top: 20px;"><a href="{{ url_for('dashboard.home') }}">Back to Dashboard</a></p>
+<p style="margin-top: 20px;"><a href="{{ url_for('dashboard.home') }}">Back to Dashboard</a></p> <!-- link to dashboard home -->
 {% endblock %}

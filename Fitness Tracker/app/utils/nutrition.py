@@ -25,8 +25,7 @@ def calcNutrients(foodName, mass): # function to get calories and protein for a 
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             foodName TEXT UNIQUE,
             caloriesPer100g REAL,
-            proteinPer100g REAL,
-            
+            proteinPer100g REAL
         );
         """
     ) # executes SQL to ensure the nutrition table exists
@@ -37,7 +36,7 @@ def calcNutrients(foodName, mass): # function to get calories and protein for a 
 
     cursor.execute(
         """
-        INSERT OR IGNORE INTO nutritionDatabase (foodName, caloriesPer100g, proteinPer100g,)
+        INSERT OR IGNORE INTO nutritionDatabase (foodName, caloriesPer100g, proteinPer100g)
         VALUES (?, ?, ?);
         """,
         (apiResult["foodName"], caloriesPer100, proteinPer100),

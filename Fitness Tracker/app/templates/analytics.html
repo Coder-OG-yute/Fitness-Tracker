@@ -1,14 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
-<!-- analytics page: displays weight, strength, calories and protein charts; Chart.js with period filters and goal progress -->
+<!-- analytics page: displays weight, strength, calories and protein charts
+ <!-- uses chart.js with period filters and goal progress -->
 <h1>Analytics Dashboard</h1>
 
-<!--
-This page displays various charts showing the user's fitness progress.
-We use Chart.js to create line charts and circular progress charts.
--->
+<!-- analytics: weight, strength, calories, protein line charts + goal circular progress graph-->
 
-<!-- Weight Chart -->
+<!-- weight chart with daily weekly monthly yearly time view buttons from /analytics/weight, rendered by charts.js -->
 <div class="chart-container">
     <h2>Weight</h2>
     <div class="view-buttons">
@@ -22,16 +20,16 @@ We use Chart.js to create line charts and circular progress charts.
     </div>
 </div>
 
-<!-- Goal Progress with Circular Chart (no period filter) -->
+<!-- goal progress circular chart from /analytics/goals, rendered by charts.js -->
 <div class="chart-container">
     <h2>Goal Progress</h2>
     <div id="goalsCircularContainer" style="display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0;">
-        <!-- Circular progress charts will be generated here -->
+        <!-- circular progress charts injected here by charts.js -->
     </div>
     <canvas id="goalsChart" width="400" height="200" style="display: none;"></canvas>
 </div>
 
-<!-- strength chart: select exercise dropdown then line chart of weight/reps over time; /analytics/strength -->
+<!-- strength chart: select exercise dropdown then line chart of weight/reps over time from /analytics/strength rendered by charts.js -->
 <div class="chart-container">
     <h2>Strength Progression</h2>
     <p>
@@ -65,7 +63,7 @@ We use Chart.js to create line charts and circular progress charts.
     </div>
 </div>
 
-<!-- protein chart: intake over period; /analytics/protein?period= -->
+<!-- protein chart: intake over a period -->
 <div class="chart-container">
     <h2>Protein Intake</h2>
     <div class="view-buttons">
@@ -110,24 +108,9 @@ We use Chart.js to create line charts and circular progress charts.
 }
 
 /* 
-    Circular Progress Chart Styles
+    circular progress chart style from
     Source: https://codepen.io/dianastanciu/pen/bGbwVNr
-    
-    EDITS MADE:
-    1. Removed SCSS variables ($stroke-dasharray-1, $stroke-dasharray-2, $stroke-dasharray-3)
-       and converted to standard CSS with hardcoded values
-    2. Removed @keyframes animations (dash-1, dash-2, dash-3) - progress is now set dynamically via JavaScript
-    3. Simplified .circular-progress-container to inline-block display for multiple goal charts
-    4. Changed .info positioning from translate(50%, -50%) to translate(-50%, -50%) for better centering
-    5. Modified .info__top and .info__bottom colors from white/dark to #333/#666 for better contrast on white background
-    6. Removed fixed animation-based progress - now calculated dynamically based on goal progress percentage
-    7. Added .circular-progress class wrapper for better organization
-    
-    WHY: The original template used SCSS and fixed animations for demo purposes. We needed
-    dynamic progress calculation based on actual goal data from our database, so we removed
-    the animations and implemented JavaScript-based stroke-dashoffset calculation. We also
-    adapted colors to work with our white background theme instead of the original dark theme.
-*/
+   */
 .circular-progress-container {
     display: inline-block;
     margin: 10px;

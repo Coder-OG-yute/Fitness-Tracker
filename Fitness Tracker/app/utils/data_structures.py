@@ -1,9 +1,9 @@
 # custom data structures: Stack (LIFO) used in workout presets; Queue (FIFO) used in tips search
 
 
-class Stack: # simple stack using a Python list; push adds to top, pop removes last, is_empty checks if empty
+class Stack: 
     """
-    a simple stack using a Python list underneath. operations: push (add to top), pop (remove last), is_empty (check if no items).
+    a stack using a Python list underneath. operations: push (add to top), pop (remove last), is_empty (check if no items).
     """
 
     def __init__(self):
@@ -33,9 +33,10 @@ class Stack: # simple stack using a Python list; push adds to top, pop removes l
         return self.dataList.pop(index)
 
 
-class Queue: # simple queue (FIFO); can be used to process time-ordered data in order
+class Queue: 
     """
-    a simple queue (first in, first out). can be used to process time-ordered data (e.g. log entries) in the order they were recorded.
+     queue (first in, first out)
+     used to process time-ordered data (e.g. log entries) in the order they were recorded.
     """
 
     def __init__(self):

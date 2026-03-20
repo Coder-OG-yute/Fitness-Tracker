@@ -26,9 +26,9 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/signup", methods=["GET", "POST"])
 def signup():
     """
-    handles user sign-up (registration)
+    handles user sign up 
 
-    Algorithm of log in process:
+    algorithm of registration process:
     1. If the request is GET, show the empty sign-up form
     2. If the request is POST:
        - Reads the username, email, password and confirmPassword from the request form
@@ -90,7 +90,7 @@ def login():
     """
     handles user login.
 
-    Algorithm of log in process:
+    algorithm of login process:
     1. If the request is GET, show the login form
     2. If the request is POST:
        - Reads the username and password from the request form

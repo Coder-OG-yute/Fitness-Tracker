@@ -53,8 +53,9 @@ class WorkoutPreset: # uses OOP model i created
     Push Day or Leg Day
     """
 
-    def __init__(self, presetName, exerciseList=None, presetId=None): # initializes the workout preset with a name and a list of exercise presets
+    def __init__(self, presetName, exerciseList=None, presetId=None): # initialises the workout preset with a name and a list of exercise presets
         self.presetName = presetName # sets the name of the workout preset
+        self.presetId = presetId # id from DB when loaded; None for new presets
         self.exerciseList = Stack() # uses Stack (LIFO) so we can push exercises and pop for undo
         if exerciseList is not None:
             for ex in exerciseList:

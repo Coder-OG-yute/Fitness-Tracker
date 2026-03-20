@@ -1,30 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
-<!-- signup page: form for username, email and password; posts to auth signup route -->
-<h1>Sign Up</h1>
+<!-- signup page: form for username, email, password
+ POST to auth signup and validation.js checks pasword match -->
+<h1>Sign Up</h1> <!-- heading for the signup page -->
 
-<!-- form for creating a new account; validation.js checks password and confirm match -->
-<form method="POST">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required>
+<!-- form: username, email, password, confirmPassword; validation.js checks match on client -->
+<form method="POST"> <!-- form for username, email, password, confirmPassword -->
+    <label for="username">Username:</label> <!-- label for username input -->
+    <input type="text" id="username" name="username" required> <!-- input for username -->
     <br>
-
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required>
+    <label for="email">Email:</label> <!-- label for email input -->
+    <input type="email" id="email" name="email" required> <!-- input for email -->
     <br>
-
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required>
+    <label for="password">Password:</label> <!-- label for password input -->
+    <input type="password" id="password" name="password" required> <!-- input for password -->
     <br>
-
-    <label for="confirmPassword">Confirm Password:</label>
-    <input type="password" id="confirmPassword" name="confirmPassword" required>
+    <label for="confirmPassword">Confirm Password:</label> <!-- label for confirm password input -->
+    <input type="password" id="confirmPassword" name="confirmPassword" required> <!-- input for confirm password -->
     <br>
-
-    <button type="submit">Create Account</button>
+    <button type="submit">Create Account</button> <!-- button to submit and create account -->
 </form>
 
 <!-- link to login page if user already has an account -->
-<p>Already have an account? <a href="{{ url_for('auth.login') }}">Log in here</a>.</p>
+<p>Already have an account? <a href="{{ url_for('auth.login') }}">Log in here</a>.</p> <!-- link to login page -->
 {% endblock %}
 
