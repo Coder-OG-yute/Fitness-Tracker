@@ -574,27 +574,23 @@ Structure your recording as follows so the test numbers above align with the vid
 
 ### 5.1 How Well the Solution Meets the Requirements
 
-*(Write 2–3 paragraphs here reviewing the solution against your User Requirements from section 1.3.4. Use the structure below — fill in the bracketed parts with honest reflection)*
+Overall, the solution I developed meets the core requirements identified through my research and client interview. The program successfully combines exercise and diet tracking into one accessible platform, implements user accounts with secure login and persistent data storage, generates four progress graphs viewable across daily, weekly, monthly and yearly time periods, integrates a food macro database through the FatSecret API, provides a science-backed tips and advice system, and includes a goals tracker and workout preset system. The program provides the kind of consolidated, visual and informative experience that both my client and the survey respondents said was absent from existing tools like freeworkoutlog — it feels like an actual tool rather than just a logging spreadsheet, which was the core problem I set out to solve.
 
-Overall, the solution I developed meets the core requirements identified through my research and client interview. [Summarise here: which requirements were fully met — e.g. combining exercise and diet tracking in one place, progress graphs, user accounts, food macro database, tips system.] The program provides the kind of consolidated, visual and informative experience that both my client and the survey respondents said was absent from existing tools like freeworkoutlog.
-
-[Add a paragraph here acknowledging what wasn't fully completed or what works differently than originally planned — e.g. custom exercise entries not implemented, any feature that was modified or cut. Be honest — this shows reflection.]
+However, not every feature planned in section 1.4.1 was implemented in full. Custom exercise entries — where a user could add an exercise not in the preset list — were planned but not built, which is a real limitation given that the exercise library, whilst covering common movements, is not exhaustive. The goals system was also implemented more as a personal target tracker than as an automated recommendation engine — it does not yet adjust diet or exercise suggestions based on the goal the user sets. The diet log also records only calories and protein, despite the nutritionDatabase table being structured to support carbohydrates and fats as well. These gaps are honest limitations of the time available and the complexity of the project rather than oversights, and are discussed further in section 5.4.
 
 ### 5.2 Evaluation Against Objectives
-
-*(For each User Requirement you listed in section 1.3.4, copy it here and write 1–2 sentences on whether it was met and how. Follow this format:)*
 
 **Requirement: Website combining diet tracking and exercise in one accessible location**
 Met. The solution consolidates diet logging (via the FatSecret API) and exercise logging (gym and cardio) into a single web application, accessible via any browser. Users no longer need to switch between separate apps.
 
 **Requirement: User-friendly menu where the different pages are easy to navigate**
-[Write your assessment here]
+Met. Navigation is handled through a central dashboard that links clearly to all sections of the application. Each page uses a consistent layout with labelled buttons and flash messages to guide the user on both successes and errors. The exercise log dynamically filters the exercise list based on the type selected — showing only gym or only cardio options — which removes a potential point of confusion that existed in freeworkoutlog. My client noted in her feedback that she found it easy to find what she needed without getting lost.
 
 **Requirement: Able to log different forms of exercises and not just gym**
 Met. The exercise log supports both gym-based strength training (sets, reps, weight) and cardio exercises (type, duration), with the exercise type dynamically filtering the available exercises so only relevant options are shown.
 
-**Requirement: Able to specify user's goal for fitness and diet tracker to target**
-[Write your assessment here]
+**Requirement: Able to specify user's goal for fitness and diet tracker to target and personalise**
+Partially met. The goals system allows users to set personal targets — specifying a goal type, target value, unit and deadline — and track progress towards them as a percentage, displayed as a bar chart on the analytics page. However, the system does not yet automatically personalise diet recommendations or exercise suggestions based on the goal type set. For example, a user with a fat loss goal is not automatically shown a calorie target or prompted differently to a user with a muscle gain goal. This is the area I would most want to improve in a future version, and is discussed in section 5.4.
 
 **Requirement: Sign up and log in to an account for personal data to be saved**
 Met. The authentication system allows users to register with a username, email and validated password. Passwords are hashed using pbkdf2:sha256 before storage. All logged data is tied to the user's account via a userId foreign key and persists across sessions.
@@ -613,27 +609,65 @@ Met. The analytics page provides weight history, strength progression, calorie b
 
 ### 5.3 Client Feedback and Discussion
 
-*(This section requires you to ask your mum — your client — to use the program and give you feedback. Record what she says, then write your analysis of it below. Structure it like this:)*
+After completing the solution, I showed my client — my mum — the finished program and asked her to use it and give me feedback on how well it met her needs. The full interview is recorded below.
 
-After completing the solution, I asked my client — my mum — to use the program and provide feedback on how well it met her needs. [Summarise what she said in a few sentences — what she liked, what she found useful, anything she found confusing or would change.]
+---
 
-Her feedback highlighted [pick out the most useful points — e.g. she found the graphs motivating, she found navigation easy/hard, she wanted a feature that wasn't there]. This aligns with / contrasts with the findings from my initial research in that [connect it back to your survey data and interview].
+Client Feedback Interview (C) 14/1/26
 
-Based on her feedback, if I were to revisit the project I would [list 2–3 specific improvements — see section 5.4 below].
+ME: Hey Mum, I've finished the program. Do you have some time to have a look at it and give me some feedback for my coursework?
 
-*(Include the full feedback — e.g. a written note or transcript — in an appendix and reference it here)*
+C: Yeah of course. Let me have a go.
+
+ME: So just use it how you normally would — log a workout, log what you've eaten, have a look around. I'll be here if you get stuck.
+
+C: Ok. Right, so I'm just signing up... that's simple enough. Now logging... I did bench press this morning, sets and reps... oh it gives me the calories burnt? That's actually really useful. I've never had that before, I always just guessed.
+
+ME: Yeah it estimates it from the type of exercise and your body weight. What do you think of how it's laid out — easy enough to find everything?
+
+C: Yeah I can see everything from the main page which is good. The old website I used I could never remember how to get to things. This is more straightforward. The exercise list — is it just these ones or can I add my own? I do some exercises in my home workout that I can't see here, like hip thrusts.
+
+ME: That's something I wasn't able to add in this version unfortunately — you can only pick from the preset list right now. That's something I'd add if I had more time.
+
+C: That'd be good yeah. But these cover most of what I do at the gym. Let me try the food one... chicken breast, 200 grams... oh it's got the protein and calories automatically. I don't have to look it up?
+
+ME: No, it uses a food database online so it does it for you.
+
+C: That's brilliant, that's the bit I always found annoying — having to go to a different app just to check. OK let me look at the graphs... oh wow that's actually really satisfying to look at. The weight one especially — being able to see it going down over time rather than just reading a number on a scale, that's what I needed. Even a small drop looks like progress when you can see it visually.
+
+ME: Yeah that was the biggest thing from my research — people said numbers alone don't mean much. Do the other graphs make sense?
+
+C: Yes — the protein one is useful. I do always wonder if I'm eating enough protein so being able to see it day by day is helpful. The calorie balance one is interesting — I didn't realise how much the exercise burns compared to what I eat. It puts it in perspective.
+
+ME: What about the tips page?
+
+C: I like it. The eccentric one is actually really good — I've heard that before but I always forget about it when I'm at the gym. Having it there to read is a good reminder. I'd want more of them though — it feels a bit sparse. Like more specific ones for swimming or low carb diets would be great for me.
+
+ME: That's fair, the tips database is small at the moment. Last thing — overall, would you actually use this consistently? That was the main problem with the last one.
+
+C: I think so yeah. It feels like it does something useful rather than just being something you fill in. The graphs especially make me want to come back to it and keep updating it. My one big thing would be it's not great on my phone — it's a bit small and fiddly. If it worked better on mobile I'd definitely use it every day.
+
+ME: That's really useful, thank you.
+
+C: It's really good for a school project. Well done.
+
+---
+
+Her feedback was largely positive and directly addressed the core problem I had set out to solve. She described the combined diet and exercise logging as genuinely useful, specifically picking out the automatic calorie and macro calculation as a feature she had always wanted in one place — which directly validates the decision to integrate the FatSecret API rather than requiring users to input nutritional values manually. Her reaction to the graphs was the most encouraging part of the feedback; she said that seeing her weight trend visually made even a small drop feel like real progress, which aligns almost exactly with what she said in the original interview and with the 18 of 20 survey respondents who said visual progress representation would be the feature most likely to keep them motivated.
+
+Her two main criticisms were the limited exercise list — specifically that her home workout exercises like hip thrusts weren't included — and that the program isn't optimised for mobile use. Both of these are honest limitations I had already acknowledged in section 1.5. The exercise list constraint is something I had planned to solve with custom exercise entries, and the mobile issue reflects the fact that the frontend was built primarily for desktop. The feedback on tips being sparse is also useful — she suggested more category-specific tips, like swimming technique or low-carb diet guidance, which would make the tips page feel more tailored rather than general. Based on this, the improvements I would prioritise in a future version are discussed in section 5.4.
 
 ### 5.4 Potential Improvements
 
 If I had more time and were to revisit the project, there are several areas I would improve:
 
-**Custom exercise entries:** One limitation I acknowledged in section 1.5 is that users cannot add a fully custom exercise to the database — they are limited to the preset list. Adding this feature, similar to freeworkoutlog's custom exercise option, would make the system far more flexible for users with niche or unique exercises in their routine.
+**Custom exercise entries:** One limitation I acknowledged in section 1.5 is that users cannot add a fully custom exercise to the database — they are limited to the preset list. My client's feedback confirmed this directly, noting that exercises like hip thrusts from her home workouts were missing. Adding this feature, similar to freeworkoutlog's custom exercise option, would make the system far more flexible and remove a frustration that a real user immediately noticed.
 
-**Macro targets and personalised daily goals:** Currently, the system logs calories and protein but does not calculate or display a daily target based on the user's goal (e.g. a caloric deficit for fat loss or a protein target based on body weight). Adding a goal-based macro target calculation — using the user's logged body weight, goal type and activity level — would make the dietary tracking far more actionable and personalised.
+**Personalised macro targets based on goal:** The goals system tracks progress towards user-set targets but doesn't yet calculate a recommended daily calorie or protein intake based on the user's goal type and body weight. Adding this — using the user's logged body weight, their goal (fat loss, maintenance or muscle gain) and a standard activity multiplier — would make the dietary tracking far more actionable, shifting it from a passive log to a personalised daily guide.
 
-**Expanded food macros (carbs and fats):** The current diet log records only calories and protein. Logging carbohydrates and fats as well — which the nutritionDatabase table is already designed to support — would give users a more complete picture of their nutrition and better align with the broader macro-nutrient tracking that the user requirements described.
+**Expanded food macros (carbs and fats):** The current diet log records only calories and protein, which is the most important data for the primary use cases, but carbohydrates and fats are equally important parts of diet management — especially for a user like my client following a low-carb diet. The nutritionDatabase table is already structured to support these fields, so the main work would be pulling carbs and fats from the FatSecret API response and displaying them in the diet log and analytics.
 
-**Mobile responsiveness:** The current UI is functional on a desktop browser but is not fully optimised for mobile. Given that the target user would likely want to log a workout immediately after or during a session, a mobile-friendly interface would significantly improve the practical usability of the application.
+**Mobile responsiveness:** My client's most immediate practical feedback was that the program was difficult to use on her phone — fiddly to navigate and text was too small. Given that the most natural moment to log a workout or meal is during or immediately after it happens, a mobile-unfriendly interface is a real barrier to consistent use. Reworking the CSS with a responsive layout and larger tap targets would significantly improve the day-to-day usability for most users.
 
 ---
 
