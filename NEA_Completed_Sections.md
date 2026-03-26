@@ -300,6 +300,126 @@ ELSE:
 
 This is capped at 100% on the frontend. The current value is manually updated by the user via the goals page, and the resulting progress percentage is passed as JSON to the analytics page to render a bar chart of all active goals.
 
+#### 2.3.5 FatSecret API Call – Macro-Nutrient Retrieval for Diet Logging
+
+When a user submits the diet log form, the program needs to find the calories and protein for the food they entered and the mass in grams they specified. Because there is no practical way to store every food in existence in a local database, this is handled by calling the FatSecret API — an external web service that holds a large food nutrition database. The algorithm in `fatsecret_api.py` (`getFoodMacro`) works as follows:
+
+```
+RECEIVE foodName (text entered by user), mass (grams entered by user)
+
+STEP 1 – Search for the food:
+    results = FatSecret.foods_search(foodName)
+    IF results is empty:
+        RETURN None  ← no match found, caller will show error
+
+STEP 2 – Take the first result:
+    firstItem = results[0]
+    foodName  = firstItem["food_name"]
+    foodID    = firstItem["food_id"]
+
+STEP 3 – Get full nutritional detail for that food:
+    detailFood = FatSecret.food_get(foodID)
+    servings   = detailFood["servings"]["serving"]
+
+    IF servings is a single dict (not a list):
+        serving = servings           ← normalise: use it directly
+    ELSE:
+        serving = servings[0]        ← take first serving from the list
+
+STEP 4 – Extract raw values from the serving:
+    caloriesPerServing = float(serving["calories"])
+    proteinPerServing  = float(serving["protein"])
+    servingMass        = float(serving["metric_serving_amount"])
+
+    IF servingMass == 0:
+        RETURN None   ← cannot divide by zero
+
+STEP 5 – Scale to the mass the user entered:
+    perGram        = 1 / servingMass
+    totalCalories  = ROUND(caloriesPerServing × perGram × mass, 1)
+    totalProtein   = ROUND(proteinPerServing  × perGram × mass, 1)
+
+RETURN { foodName, totalCalories, totalProtein }
+```
+
+The result is then passed back to `calcNutrients` in `nutrition.py`, which additionally caches the per-100g values into the local `nutritionDatabase` table using `INSERT OR IGNORE` — so foods looked up before do not require a repeat API call if referenced later. The final calories and protein values are inserted into the `dietLogs` table and shown to the user in a success message.
+
+The key challenge this algorithm solves is that FatSecret does not return values per 100 g directly — it returns values per serving, where each food's serving size varies. The `perGram` calculation (1 ÷ servingMass) converts this to a per-gram rate, which is then scaled by whatever mass the user entered, making the result accurate regardless of how much of the food was eaten.
+
+#### 2.3.6 Analytics Data Aggregation and Graph Rendering
+
+The analytics page displays four charts — weight history, strength progression, calorie balance, and protein intake — all of which support four selectable time views: daily, weekly, monthly, and yearly. Each chart is driven by a separate JSON API endpoint on the backend, and rendered on the frontend by a charting library using the data returned. The algorithm below describes how the data aggregation works for each time period, using the calorie balance chart as the example since it is the most complex (it queries two tables and computes a net value):
+
+```
+RECEIVE period (from user button click: "daily" / "weekly" / "monthly" / "yearly")
+
+STEP 1 – Query calories SPENT (from exercise logs):
+    IF period == "daily":
+        SQL: SELECT date, SUM(caloriesBurned)
+             FROM exerciseLogs WHERE userId = ?
+             GROUP BY date
+
+    IF period == "weekly":
+        SQL: SELECT date(date, 'weekday 0', '-6 days') as week_start,
+                    SUM(caloriesBurned)
+             FROM exerciseLogs WHERE userId = ?
+             GROUP BY strftime('%Y-%W', date)
+
+    IF period == "monthly":
+        SQL: SELECT strftime('%Y-%m', date), SUM(caloriesBurned)
+             FROM exerciseLogs WHERE userId = ?
+             GROUP BY strftime('%Y-%m', date)
+
+    IF period == "yearly":
+        SQL: SELECT strftime('%Y', date), SUM(caloriesBurned)
+             FROM exerciseLogs WHERE userId = ?
+             GROUP BY strftime('%Y', date)
+
+    → Store result as dict: spent_by = { period_label: calories_burned }
+
+STEP 2 – Query calories GAINED (from diet logs):
+    Same structure as Step 1 but queries dietLogs and SUM(calories)
+    → Store result as dict: gained_by = { period_label: calories_eaten }
+
+STEP 3 – Merge both sets of period labels:
+    all_periods = SORT( UNION of keys in spent_by and gained_by )
+    (so periods where only exercise OR only diet was logged still appear)
+
+STEP 4 – Build the data list:
+    FOR each period_label in all_periods:
+        spent  = spent_by.get(period_label, 0)    ← default 0 if no exercise that period
+        gained = gained_by.get(period_label, 0)   ← default 0 if no food logged that period
+        net    = gained - spent
+        APPEND { period: period_label, spent: spent, gained: gained, net: net }
+
+STEP 5 – Return as JSON:
+    RETURN jsonify(dataList)
+```
+
+For the strength progression chart, an additional aggregation step — `periodKey()` — is applied in Python after the SQL query rather than in SQL itself, since the data must first be split by exercise name before being grouped by time period:
+
+```
+FOR each data point in a given exercise's history:
+    label = periodKey(date, period)
+        → daily:   label = "YYYY-MM-DD"
+        → weekly:  label = week start date (subtract days since Sunday)
+        → monthly: label = "YYYY-MM"
+        → yearly:  label = "YYYY"
+
+    ADD y_value to bucket[label]
+    INCREMENT count in bucket[label]
+
+FOR each bucket:
+    averaged_y = y_sum / count   ← average value across all sessions in that period
+    APPEND { date: label, yValue: averaged_y }
+
+SORT buckets by sort_key (chronological order)
+```
+
+For gym exercises, the y-value plotted is **weight ÷ total reps** (weight per rep), which gives a single number that rises as the user gets stronger regardless of how many sets they do. For cardio exercises, the y-value is simply the **duration in minutes**. This makes strength progression directly comparable across sessions even when the user varies their sets or reps.
+
+On the frontend, once the JSON is received from the endpoint, the charting library reads the array of `{ date, value }` objects and plots each as a data point on a line or bar chart. The user can switch time periods using the Daily / Weekly / Monthly / Yearly buttons, which trigger a new fetch request to the same endpoint with a different `?period=` query parameter, and the chart re-renders with the newly aggregated data.
+
 ### 2.4 Data Structures
 
 Two custom data structures are implemented in `data_structures.py` and used actively in the system:
